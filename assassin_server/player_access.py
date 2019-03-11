@@ -1,4 +1,4 @@
-import functools
+import functools, random
 
 from flask import (
     Blueprint, flash, g, redirect, render_template, request, session, url_for, jsonify
@@ -28,8 +28,10 @@ def add_player():
 
     if error is None:
         db.execute(
-            'INSERT INTO players (player_name, game_code, target_name) VALUES (?, ?, ?)',
-            (player_name, game_code, target_name)
+            'INSERT INTO players'
+            ' (player_name, game_code, is_alive, disputed_Got)'
+            ' VALUES (?, ?, 1, 0)',
+            (player_name, game_code)
         )
         db.commit()
 
@@ -44,7 +46,7 @@ def request_target():
 
     db=get_db()
     target_name=db.execute(
-        'SELECT target_name FROM players'
+        'SELECT is_alive FROM players'
         ' WHERE player_name= ? AND game_code = ?',
         (player_name, game_code)
     ).fetchone()
@@ -58,3 +60,20 @@ def request_target():
             "target_name" : None
         }
     return jsonify(target_map)
+
+# TODO: go to add player thing next?? or maybe return nothing and thats handle through the game
+@bp.route('/create_game')
+def create_game():
+    game_name=request.args.get('game_name', None)
+    game_code=random.randint(1000, 10000)
+
+    db=get_db()
+    db.execute(
+        'INSERT INTO games'
+        ' (game_name, game_code, game_state)'
+        ' (?, ?, 0)',
+        (game_name, game_state)
+    )
+    db.commit()
+
+    return None

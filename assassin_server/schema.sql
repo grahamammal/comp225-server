@@ -5,8 +5,8 @@ CREATE TABLE players (
   player_id INTEGER PRIMARY KEY AUTOINCREMENT,
   player_name TEXT NOT NULL,
   target_name TEXT,
-  is_alive BOOLEAN,
-  disputed_Got BOOLEAN,
+  is_alive BOOLEAN NOT NULL,
+  disputed_Got BOOLEAN NOT NULL,
   game_code INTEGER NOT NULL
 );
 
