@@ -6,7 +6,7 @@ CREATE TABLE players (
   player_name TEXT NOT NULL,
   target_name TEXT,
   is_alive BOOLEAN NOT NULL,
-  disputed_Got BOOLEAN NOT NULL,
+  disputed_got BOOLEAN NOT NULL,
   game_code INTEGER NOT NULL
 );
 

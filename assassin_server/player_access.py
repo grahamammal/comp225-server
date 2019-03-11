@@ -46,7 +46,7 @@ def request_target():
 
     db=get_db()
     target_name=db.execute(
-        'SELECT is_alive FROM players'
+        'SELECT target_name FROM players'
         ' WHERE player_name= ? AND game_code = ?',
         (player_name, game_code)
     ).fetchone()
