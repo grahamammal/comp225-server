@@ -8,7 +8,7 @@ SESSION_TYPE = 'redis'
 sess = Session()
 
 def create_app(test_config=None):
-    # create and configure the app
+    """Creates app with specified config"""
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
         SECRET_KEY=b'_5#y2L"F4Q8z\n\xec]/',
@@ -33,7 +33,7 @@ def create_app(test_config=None):
         pass
 
 
-
+    #intialises session on server
     sess.init_app(app)
 
     # a simple page that says hello
@@ -41,10 +41,11 @@ def create_app(test_config=None):
     def hello():
         return 'Hello, World!'
 
-
+    #adds database to the app
     from . import db
     db.init_app(app)
 
+    #adds the player_access blueprint to the app
     from . import player_access
     app.register_blueprint(player_access.bp)
 

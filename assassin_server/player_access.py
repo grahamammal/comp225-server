@@ -11,6 +11,7 @@ bp = Blueprint('player_access', __name__, url_prefix='/player_access')
 
 @bp.route('/add_player',  methods=['POST'])
 def add_player():
+    """Adds a player with the given name to the game with the given game code, returns whether the name already exists or not"""
     content = request.get_json()
 
     player_first_name=content['player_first_name']
@@ -51,8 +52,9 @@ def add_player():
     return str(error)
 
 #players can request data by providing their name and their game code
-@bp.route('/request_target')
+@bp.route('/request_target', methods=['GET'])
 def request_target():
+    """Requests the target of the player who made the request, using that players session info"""
 
     player_id=session['this_player_id']
 
@@ -80,23 +82,48 @@ def request_target():
         }
     return jsonify(target_map)
 
-# TODO: go to add player thing next?? or maybe return nothing and thats handle through the game
+
 @bp.route('/create_game', methods=['POST'])
 def create_game():
-
+    """Creates a game in the data base with the specified name, and returns the game code for that game."""
     content = request.get_json()
 
     game_name=content['game_name']
 
-    game_code=random.randint(1000,10000)
-
     db=get_db()
+
+    is_unique=False
+    attempts=0
+    min_code=1000
+    max_code=9999
+
+    #guarentees that game_code is UNIQUE
+    while not is_unique:
+        game_code=random.randint(min_code, max_code+1)
+
+        if db.execute(
+            'SELECT game_code FROM games'
+            ' WHERE game_code = ?',
+            (game_code,)
+        ).fetchone() is None:
+            is_unique=True
+
+        attempts=attempts+1
+        if attempts>(max_code-min_code):
+            return "No more game codes"
+
+
+
     db.execute(
         'INSERT INTO games'
         ' (game_name, game_code, game_state)'
-        ' (?, ?, 0)',
+        ' VALUES (?, ?, 0)',
         (game_name, game_code)
     )
     db.commit()
 
-    return None
+    game_code_json = {
+        'game_code': game_code
+    }
+
+    return jsonify(game_code_json)
