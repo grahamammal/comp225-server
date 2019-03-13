@@ -21,6 +21,7 @@ CREATE TABLE games (
   game_id INTEGER PRIMARY KEY AUTOINCREMENT,
 
   game_name TEXT NOT NULL,
+  game_rules TEXT,
   game_code INTEGER UNIQUE NOT NULL,
 
   game_state INTEGER NOT NULL
