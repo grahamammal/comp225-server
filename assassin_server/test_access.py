@@ -12,7 +12,7 @@ bp = Blueprint('test_access', __name__, url_prefix='/test_access')
 
 @bp.route('/get_player', methods=['POST'])
 def get_player():
-    """Returns all the information of a specified player"""
+    """Returns all the information of a specified player for testing"""
 
     content = request.get_json()
     db=get_db()
@@ -34,6 +34,7 @@ def get_player():
         (player_first_name, player_last_name, game_code)
     ).fetchone()
 
+
     player_json={
         "player_id": player[0],
         "player_first_name": player[1],
@@ -47,3 +48,13 @@ def get_player():
     }
 
     return jsonify(player_json)
+
+@bp.route('/get_all_players', methods=['GET'])
+def get_all_players():
+    """Returns every player in the table for testing"""
+
+    db=get_db()
+
+    players=db.execute(
+        'SELECT * FROM players'
+    ).fetchall()
