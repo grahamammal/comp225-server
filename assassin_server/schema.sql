@@ -3,10 +3,10 @@ DROP TABLE IF EXISTS games;
 
 CREATE TABLE players (
   player_id INTEGER PRIMARY KEY AUTOINCREMENT,
-
   player_first_name TEXT NOT NULL,
   player_last_name TEXT NOT NULL,
 
+  target_id INTEGER UNIQUE NOT NULL,
   target_first_name TEXT,
   target_last_name TEXT,
 

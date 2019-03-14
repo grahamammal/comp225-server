@@ -5,10 +5,9 @@ from flask import (
     Blueprint, flash, g, redirect, render_template, request, session, url_for, jsonify
 )
 
-from assassin_server.db import get_db
+from assassin_server.db import get_db, row_to_dict, table_to_dict
 
 bp = Blueprint('test_access', __name__, url_prefix='/test_access')
-
 
 @bp.route('/get_player', methods=['POST'])
 def get_player():
@@ -35,19 +34,10 @@ def get_player():
     ).fetchone()
 
 
-    player_json={
-        "player_id": player[0],
-        "player_first_name": player[1],
-        "player_last_name": player[2],
-        "target_first_name": player[3],
-        "target_last_name": player[4],
-        "is_alive": player[5],
-        "is_creator": player[6],
-        "disputed_got": player[7],
-        "game_code": player[8]
-    }
+    player_json=row_to_dict(player)
 
     return jsonify(player_json)
+
 
 @bp.route('/get_all_players', methods=['GET'])
 def get_all_players():
@@ -58,3 +48,5 @@ def get_all_players():
     players=db.execute(
         'SELECT * FROM players'
     ).fetchall()
+
+    return jsonify(table_to_dict(players))

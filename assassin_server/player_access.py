@@ -5,7 +5,7 @@ from flask import (
 )
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from assassin_server.db import get_db
+from assassin_server.db import get_db, row_to_dict
 
 bp = Blueprint('player_access', __name__, url_prefix='/player_access')
 
@@ -49,6 +49,11 @@ def add_player():
         ).fetchone()[0]
 
     return str(error)
+
+# TODO: finish this
+@bp.route('/got_player')
+def got_player():
+    return None
 
 
 @bp.route('/request_target', methods=['GET'])

@@ -42,3 +42,23 @@ def init_db_command():
 def init_app(app):
     app.teardown_appcontext(close_db)
     app.cli.add_command(init_db_command)
+
+def table_to_dict(table):
+    """Turns multiple rows to a list of dictonaries"""
+    dict_list=[]
+
+    for row in table:
+        dict_list.append(row_to_dict(row))
+
+    return dict_list
+
+def row_to_dict(row):
+    """Turns a row from sqlite3 to a dictionary"""
+    row_keys=row.keys()
+    row_dict={}
+
+
+    for i in range(len(row)):
+        row_dict[row_keys[i]]=row[i]
+
+    return row_dict
