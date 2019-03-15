@@ -39,6 +39,34 @@ def get_player():
     return jsonify(player_json)
 
 
+@bp.route('/get_game', methods=['POST'])
+def get_game():
+    """Returns a single game"""
+
+    content = request.get_json()
+    db=get_db()
+
+    game_code=content["game_code"]
+
+    if db.execute(
+        'SELECT * FROM games'
+        ' WHERE game_code = ?',
+        (game_code,)
+    ).fetchone() is None:
+        return "There is no such game"
+
+    game=db.execute(
+        'SELECT * FROM games'
+        ' WHERE game_code = ?',
+        (game_code,)
+    ).fetchone()
+
+
+    game_json=row_to_dict(game)
+
+    return jsonify(game_json)
+
+
 @bp.route('/get_all_players', methods=['GET'])
 def get_all_players():
     """Returns every player in the table for testing"""
@@ -50,3 +78,18 @@ def get_all_players():
     ).fetchall()
 
     return jsonify(table_to_dict(players))
+
+
+@bp.route('/get_all_games', methods=['GET'])
+def get_all_games():
+    """Returns all the info on all the games"""
+
+
+    db=get_db()
+
+    games=db.execute(
+        'SELECT * FROM games'
+    ).fetchall()
+
+
+    return jsonify(table_to_dict(games))

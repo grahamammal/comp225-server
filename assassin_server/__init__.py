@@ -53,4 +53,8 @@ def create_app(test_config=None):
     from . import test_access
     app.register_blueprint(test_access.bp)
 
+    #adds the creator_access blueprint to the app
+    from . import creator_access
+    app.register_blueprint(creator_access.bp)
+
     return app
