@@ -1,0 +1,387 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Assassin Server API</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><h1 id="assassin-server-api-docs">Assassin Server API Docs</h1>
+<p><em>Analeidi Barrera,</em><br>
+<em>Ellen Graham,</em><br>
+<em>Corey Pieper,</em><br>
+<em>Jacob Weightman</em></p>
+<h1 id="table-of-contents">Table Of Contents</h1>
+<ul>
+<li><a href="#assassin-server-api-docs">Assassin Server API Docs</a>
+<ul>
+<li><a href="#player-requests">Player Requests</a>
+<ul>
+<li><a href="#add-player">Add Player</a>
+<ul>
+<li><a href="#http-request">HTTP Request</a></li>
+<li><a href="#url-parameters">URL Parameters</a></li>
+<li><a href="#return-value">Return Value</a></li>
+</ul>
+</li>
+<li><a href="#request-target">Request Target</a>
+<ul>
+<li><a href="#http-request-1">HTTP Request</a></li>
+<li><a href="#url-parameters-1">URL Parameters</a></li>
+<li><a href="#return-value-1">Return Value</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#game-creator-requests">Game Creator Requests</a>
+<ul>
+<li><a href="#create-game">Create Game</a>
+<ul>
+<li><a href="#http-request-2">HTTP Request</a></li>
+<li><a href="#url-parameters-2">URL Parameters</a></li>
+<li><a href="#return-value-2">Return Value</a></li>
+</ul>
+</li>
+<li><a href="#start-hunt">Start Hunt</a>
+<ul>
+<li><a href="#http-request-3">HTTP Request</a></li>
+<li><a href="#url-parameters-3">URL Parameters</a></li>
+<li><a href="#return-value-3">Return Value</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#test-requests">Test Requests</a>
+<ul>
+<li><a href="#get-player">Get Player</a>
+<ul>
+<li><a href="#http-request-4">HTTP Request</a></li>
+<li><a href="#url-parameters-4">URL Parameters</a></li>
+<li><a href="#return-value-4">Return Value</a></li>
+</ul>
+</li>
+<li><a href="#get-all-players">Get All Players</a>
+<ul>
+<li><a href="#http-request-5">HTTP Request</a></li>
+<li><a href="#url-parameters-5">URL Parameters</a></li>
+<li><a href="#return-value-5">Return Value</a></li>
+</ul>
+</li>
+<li><a href="#get-game">Get Game</a>
+<ul>
+<li><a href="#http-request-6">HTTP Request</a></li>
+<li><a href="#url-parameters-6">URL Parameters</a></li>
+<li><a href="#return-value-6">Return Value</a></li>
+</ul>
+</li>
+<li><a href="#get-all-games">Get All Games</a>
+<ul>
+<li><a href="#http-request-7">HTTP Request</a></li>
+<li><a href="#url-parameters-7">URL Parameters</a></li>
+<li><a href="#return-value-7">Return Value</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#errors">Errors</a></li>
+</ul>
+</li>
+</ul>
+<h2 id="player-requests">Player Requests</h2>
+<h3 id="add-player">Add Player</h3>
+<p>This endpoint will add a player to a game.</p>
+<h4 id="http-request">HTTP Request</h4>
+<hr>
+<pre><code>POST http://&lt;localhost&gt;/player_access/add_player  
+    {
+        "player_first_name": "example"
+        "player_last_name": "example"
+        "is_creator": 0
+        "game_code": 9999
+    }
+</code></pre>
+<h4 id="url-parameters">URL Parameters</h4>
+<hr>
+
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>player_first_name</td>
+<td>None</td>
+<td>The first name of the player</td>
+</tr>
+<tr>
+<td>player_last_name</td>
+<td>None</td>
+<td>The last name of the player</td>
+</tr>
+<tr>
+<td>is_creator</td>
+<td>None</td>
+<td>1 if the player created the game, 0 otherwise</td>
+</tr>
+<tr>
+<td>game_code</td>
+<td>None</td>
+<td>The 4 digit code of the game the player is joining</td>
+</tr>
+</tbody>
+</table><h4 id="return-value">Return Value</h4>
+<hr>
+<p>None</p>
+<h3 id="request-target">Request Target</h3>
+<p>This endpoint will request the target of the player who navigated here.</p>
+<h4 id="http-request-1">HTTP Request</h4>
+<hr>
+<pre><code>GET http://&lt;localhost&gt;/player_access/request_target
+</code></pre>
+<h4 id="url-parameters-1">URL Parameters</h4>
+<hr>
+<p>None</p>
+<h4 id="return-value-1">Return Value</h4>
+<hr>
+<pre><code>{
+    "target_first_name":"example"
+    "target_last_name":"example"
+    "target_id": 0
+}
+</code></pre>
+<h2 id="game-creator-requests">Game Creator Requests</h2>
+<h3 id="create-game">Create Game</h3>
+<p>This endpoint will create the game with the specified name and rules.</p>
+<h4 id="http-request-2">HTTP Request</h4>
+<hr>
+<pre><code>POST http://&lt;localhost&gt;/creator_access/create_game
+    {
+        "game_name":"example"
+        "game_rules":"example rules"
+    }
+</code></pre>
+<h4 id="url-parameters-2">URL Parameters</h4>
+<hr>
+
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td>None</td>
+<td>The name of the game</td>
+</tr>
+<tr>
+<td>game_rules</td>
+<td>None</td>
+<td>The rules of the game</td>
+</tr>
+</tbody>
+</table><h4 id="return-value-2">Return Value</h4>
+<hr>
+<pre><code>{
+    "game_code": 9999
+}
+</code></pre>
+<h3 id="start-hunt">Start Hunt</h3>
+<p>This endpoint will start hunting phase of the game of the game creator. This request can only be made by a game creator.</p>
+<h4 id="http-request-3">HTTP Request</h4>
+<hr>
+<pre><code>GET http://&lt;localhost&gt;/creator_access/start_hunt
+</code></pre>
+<h4 id="url-parameters-3">URL Parameters</h4>
+<hr>
+<p>None</p>
+<h5 id="return-value-3">Return Value</h5>
+<hr>
+<p>None</p>
+<h2 id="test-requests">Test Requests</h2>
+<p><em>Note: These requests should only be used for testing, and not used in the actual app</em></p>
+<h3 id="get-player">Get Player</h3>
+<p>This endpoint will get all the information about the specified player.</p>
+<h4 id="http-request-4">HTTP Request</h4>
+<hr>
+<pre><code>POST http://&lt;localhost&gt;/test_access/get_player
+    {
+        "player_first_name": "example"
+        "player_last_name": "example"
+        "game_code": 9999
+    }
+</code></pre>
+<h4 id="url-parameters-4">URL Parameters</h4>
+<hr>
+
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>player_first_name</td>
+<td>None</td>
+<td>The first name of the player</td>
+</tr>
+<tr>
+<td>player_last_name</td>
+<td>None</td>
+<td>The last name of the player</td>
+</tr>
+<tr>
+<td>game_code</td>
+<td>None</td>
+<td>The 4 digit code of the game the player is in</td>
+</tr>
+</tbody>
+</table><h4 id="return-value-4">Return Value</h4>
+<hr>
+<pre><code>{
+    "player_id": 0
+    "player_first_name": "example"
+    "player_last_name": "example"
+    "target_id": 0
+    "target_first_name":"example"
+    "target_last_name":"example"
+    "is_alive": 1
+    "is_creator": 0
+    "disputed_got": 0
+    "game_code": 9999
+}
+</code></pre>
+<h3 id="get-all-players">Get All Players</h3>
+<p>This endpoint will get all the information about the all the players on the server.</p>
+<h4 id="http-request-5">HTTP Request</h4>
+<hr>
+<pre><code>GET http://&lt;localhost&gt;/test_access/get_all_players
+</code></pre>
+<h4 id="url-parameters-5">URL Parameters</h4>
+<hr>
+<p>None</p>
+<h4 id="return-value-5">Return Value</h4>
+<hr>
+<p>A JSON list, where each entry contains the following:</p>
+<pre><code>{
+    "player_id": 0
+    "player_first_name": "example"
+    "player_last_name": "example"
+    "target_id": 0
+    "target_first_name":"example"
+    "target_last_name":"example"
+    "is_alive": 1
+    "is_creator": 0
+    "disputed_got": 0
+    "game_code": 9999
+}
+</code></pre>
+<h3 id="get-game">Get Game</h3>
+<p>This endpoint will get all the information about the specified game.</p>
+<h4 id="http-request-6">HTTP Request</h4>
+<hr>
+<pre><code>POST http://&lt;localhost&gt;/test_access/get_game
+    {
+        "game_code": 9999
+    }
+</code></pre>
+<h4 id="url-parameters-6">URL Parameters</h4>
+<hr>
+
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>game_code</td>
+<td>None</td>
+<td>The 4 digit code of the game you want the info of</td>
+</tr>
+</tbody>
+</table><h4 id="return-value-6">Return Value</h4>
+<hr>
+<pre><code>{
+    "game_id": 0
+    "game_name": "name"
+    "game_rules": "rules"
+    "game_code": 9999
+    "game_state": 0
+}
+</code></pre>
+<h3 id="get-all-games">Get All Games</h3>
+<p>This endpoint will get all the information about all the games on the server.</p>
+<h4 id="http-request-7">HTTP Request</h4>
+<hr>
+<pre><code>POST http://&lt;localhost&gt;/test_access/get_all_games
+    {
+        "game_code": 9999
+    }
+</code></pre>
+<h4 id="url-parameters-7">URL Parameters</h4>
+<hr>
+<p>None</p>
+<h4 id="return-value-7">Return Value</h4>
+<hr>
+<p>A JSON list, where each entry contains the following:</p>
+<pre><code>{
+    "game_id": 0
+    "game_name": "name"
+    "game_rules": "rules"
+    "game_code": 9999
+    "game_state": 0
+}
+</code></pre>
+<h2 id="errors">Errors</h2>
+<p>The assassin-server API uses the following error codes:</p>
+
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>400</td>
+<td>Bad Request – Your request is invalid</td>
+</tr>
+<tr>
+<td>403</td>
+<td>Forbidden – You don’t have the privileges to make that request</td>
+</tr>
+<tr>
+<td>404</td>
+<td>Not Found – The specified player or game could not be found</td>
+</tr>
+<tr>
+<td>406</td>
+<td>Not Acceptable – There is already a player with this name</td>
+</tr>
+<tr>
+<td>500</td>
+<td>Internal Server Error – Something went wrong with the server! Oh no!!</td>
+</tr>
+</tbody>
+</table></div>
+</body>
+
+</html>
