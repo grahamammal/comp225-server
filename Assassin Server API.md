@@ -1,3 +1,4 @@
+﻿
 ﻿# Assassin Server API Docs
 _Analeidi Barrera,_
 _Ellen Graham,_
@@ -7,10 +8,22 @@ _Jacob Weightman_
 # Table Of Contents
 - [Assassin Server API Docs](#assassin-server-api-docs)
   * [Player Requests](#player-requests)
-    + [Add Player](#add-player)
+    + [Get Game Rules](#get-game-rules)
         * [HTTP Request](#http-request)
         * [URL Parameters](#url-parameters)
         * [Return Value](#return-value)
+	+ [Got Target](#got-target)
+	    * [HTTP Request](#http-request)
+	    * [URL Parameters](#url-parameters)
+	    * [Return Value](#return-value)
+	+ [Won Game](#won-game)
+        * [HTTP Request](#http-request)
+        * [URL Parameters](#url-parameters)
+        * [Return Value](#return-value)
+	+ [Add Player](#add-player)
+		* [HTTP Request](#http-request)
+		* [URL Parameters](#url-parameters)
+		* [Return Value](#return-value)
     + [Request Target](#request-target)
         * [HTTP Request](#http-request-1)
         * [URL Parameters](#url-parameters-1)
@@ -50,6 +63,71 @@ _Jacob Weightman_
 
 
 ## Player Requests
+
+### Get Game Rules
+
+This endpoint will return the game rules of the specified game
+
+#### HTTP Request
+---
+```
+POST http://<localhost>/player_access/get_game_rules
+    {
+        "game_code": 9999
+    }
+```
+
+#### URL Parameters
+---
+| Parameter | Default | Description
+| ------ | ------ | ------|
+| game_code | None | The 4 digit code of the game you want the rules of |
+
+#### Return Value
+---
+```
+{
+	"game_rules": "rules"
+}
+```
+### Got Target
+
+This endpoint remove your target from the game and provide you with a new one. If you got the last other person, it will redirect to /won_game
+
+#### HTTP Request
+---
+```
+GET http://<localhost>/player_access/got_target
+```
+
+#### URL Parameters
+---
+None
+#### Return Value
+---
+None
+
+### Won Game
+
+This endpoint tells you you won the game!
+
+#### HTTP Request
+---
+```
+GET http://<localhost>/player_access/won_game
+```
+
+#### URL Parameters
+---
+None
+
+#### Return Value
+---
+```
+{
+	"won_game": true
+}
+```
 
 ### Add Player
 
@@ -105,7 +183,7 @@ None
 }
 ```
 
-## Game Creator Requests 
+## Game Creator Requests
 ### Create Game
 
 This endpoint will create the game with the specified name and rules.
@@ -293,8 +371,7 @@ The assassin-server API uses the following error codes:
 
 | Parameter | Default |
 | ------ | ------ |
-| 400 | Bad Request -- Your request is invalid |
+| 400 | Bad Request -- Your request was bad, maybe there is no such player or game, a player with that name already exists, etc. Check the server code to find out why. |
 | 403 | Forbidden -- You don't have the privileges to make that request |
-| 404 | Not Found -- The specified player or game could not be found |
-| 406 | Not Acceptable -- There is already a player with this name |
-| 500 | Internal Server Error -- Something went wrong with the server! Oh no!! 
+| 500 | Internal Server Error -- Something went wrong with the server! Oh no!!
+

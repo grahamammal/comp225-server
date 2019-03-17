@@ -9,8 +9,8 @@
 </head>
 
 <body class="stackedit">
-  <div class="stackedit__html"><h1 id="assassin-server-api-docs">Assassin Server API Docs</h1>
-<p><em>Analeidi Barrera,</em><br>
+  <div class="stackedit__html"><p># Assassin Server API Docs<br>
+<em>Analeidi Barrera,</em><br>
 <em>Ellen Graham,</em><br>
 <em>Corey Pieper,</em><br>
 <em>Jacob Weightman</em></p>
@@ -20,6 +20,27 @@
 <ul>
 <li><a href="#player-requests">Player Requests</a>
 <ul>
+<li><a href="#get-game-rules">Get Game Rules</a>
+<ul>
+<li><a href="#http-request">HTTP Request</a></li>
+<li><a href="#url-parameters">URL Parameters</a></li>
+<li><a href="#return-value">Return Value</a></li>
+</ul>
+</li>
+<li><a href="#got-target">Got Target</a>
+<ul>
+<li><a href="#http-request">HTTP Request</a></li>
+<li><a href="#url-parameters">URL Parameters</a></li>
+<li><a href="#return-value">Return Value</a></li>
+</ul>
+</li>
+<li><a href="#won-game">Won Game</a>
+<ul>
+<li><a href="#http-request">HTTP Request</a></li>
+<li><a href="#url-parameters">URL Parameters</a></li>
+<li><a href="#return-value">Return Value</a></li>
+</ul>
+</li>
 <li><a href="#add-player">Add Player</a>
 <ul>
 <li><a href="#http-request">HTTP Request</a></li>
@@ -91,9 +112,69 @@
 </li>
 </ul>
 <h2 id="player-requests">Player Requests</h2>
+<h3 id="get-game-rules">Get Game Rules</h3>
+<p>This endpoint will return the game rules of the specified game</p>
+<h4 id="http-request">HTTP Request</h4>
+<hr>
+<pre><code>POST http://&lt;localhost&gt;/player_access/get_game_rules
+    {
+        "game_code": 9999
+    }
+</code></pre>
+<h4 id="url-parameters">URL Parameters</h4>
+<hr>
+
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>game_code</td>
+<td>None</td>
+<td>The 4 digit code of the game you want the rules of</td>
+</tr>
+</tbody>
+</table><h4 id="return-value">Return Value</h4>
+<hr>
+<pre><code>{
+	"game_rules": "rules"
+}
+</code></pre>
+<h3 id="got-target">Got Target</h3>
+<p>This endpoint remove your target from the game and provide you with a new one. If you got the last other person, it will redirect to /won_game</p>
+<h4 id="http-request-1">HTTP Request</h4>
+<hr>
+<pre><code>GET http://&lt;localhost&gt;/player_access/got_target
+</code></pre>
+<h4 id="url-parameters-1">URL Parameters</h4>
+<hr>
+<p>None</p>
+<h4 id="return-value-1">Return Value</h4>
+<hr>
+<p>None</p>
+<h3 id="won-game">Won Game</h3>
+<p>This endpoint tells you you won the game!</p>
+<h4 id="http-request-2">HTTP Request</h4>
+<hr>
+<pre><code>GET http://&lt;localhost&gt;/player_access/won_game
+</code></pre>
+<h4 id="url-parameters-2">URL Parameters</h4>
+<hr>
+<p>None</p>
+<h4 id="return-value-2">Return Value</h4>
+<hr>
+<pre><code>{
+	"won_game": true
+}
+</code></pre>
 <h3 id="add-player">Add Player</h3>
 <p>This endpoint will add a player to a game.</p>
-<h4 id="http-request">HTTP Request</h4>
+<h4 id="http-request-3">HTTP Request</h4>
 <hr>
 <pre><code>POST http://&lt;localhost&gt;/player_access/add_player  
     {
@@ -103,7 +184,7 @@
         "game_code": 9999
     }
 </code></pre>
-<h4 id="url-parameters">URL Parameters</h4>
+<h4 id="url-parameters-3">URL Parameters</h4>
 <hr>
 
 <table>
@@ -136,19 +217,19 @@
 <td>The 4 digit code of the game the player is joining</td>
 </tr>
 </tbody>
-</table><h4 id="return-value">Return Value</h4>
+</table><h4 id="return-value-3">Return Value</h4>
 <hr>
 <p>None</p>
 <h3 id="request-target">Request Target</h3>
 <p>This endpoint will request the target of the player who navigated here.</p>
-<h4 id="http-request-1">HTTP Request</h4>
+<h4 id="http-request-4">HTTP Request</h4>
 <hr>
 <pre><code>GET http://&lt;localhost&gt;/player_access/request_target
 </code></pre>
-<h4 id="url-parameters-1">URL Parameters</h4>
+<h4 id="url-parameters-4">URL Parameters</h4>
 <hr>
 <p>None</p>
-<h4 id="return-value-1">Return Value</h4>
+<h4 id="return-value-4">Return Value</h4>
 <hr>
 <pre><code>{
     "target_first_name":"example"
@@ -159,7 +240,7 @@
 <h2 id="game-creator-requests">Game Creator Requests</h2>
 <h3 id="create-game">Create Game</h3>
 <p>This endpoint will create the game with the specified name and rules.</p>
-<h4 id="http-request-2">HTTP Request</h4>
+<h4 id="http-request-5">HTTP Request</h4>
 <hr>
 <pre><code>POST http://&lt;localhost&gt;/creator_access/create_game
     {
@@ -167,7 +248,7 @@
         "game_rules":"example rules"
     }
 </code></pre>
-<h4 id="url-parameters-2">URL Parameters</h4>
+<h4 id="url-parameters-5">URL Parameters</h4>
 <hr>
 
 <table>
@@ -190,7 +271,7 @@
 <td>The rules of the game</td>
 </tr>
 </tbody>
-</table><h4 id="return-value-2">Return Value</h4>
+</table><h4 id="return-value-5">Return Value</h4>
 <hr>
 <pre><code>{
     "game_code": 9999
@@ -198,21 +279,21 @@
 </code></pre>
 <h3 id="start-hunt">Start Hunt</h3>
 <p>This endpoint will start hunting phase of the game of the game creator. This request can only be made by a game creator.</p>
-<h4 id="http-request-3">HTTP Request</h4>
+<h4 id="http-request-6">HTTP Request</h4>
 <hr>
 <pre><code>GET http://&lt;localhost&gt;/creator_access/start_hunt
 </code></pre>
-<h4 id="url-parameters-3">URL Parameters</h4>
+<h4 id="url-parameters-6">URL Parameters</h4>
 <hr>
 <p>None</p>
-<h5 id="return-value-3">Return Value</h5>
+<h5 id="return-value-6">Return Value</h5>
 <hr>
 <p>None</p>
 <h2 id="test-requests">Test Requests</h2>
 <p><em>Note: These requests should only be used for testing, and not used in the actual app</em></p>
 <h3 id="get-player">Get Player</h3>
 <p>This endpoint will get all the information about the specified player.</p>
-<h4 id="http-request-4">HTTP Request</h4>
+<h4 id="http-request-7">HTTP Request</h4>
 <hr>
 <pre><code>POST http://&lt;localhost&gt;/test_access/get_player
     {
@@ -221,7 +302,7 @@
         "game_code": 9999
     }
 </code></pre>
-<h4 id="url-parameters-4">URL Parameters</h4>
+<h4 id="url-parameters-7">URL Parameters</h4>
 <hr>
 
 <table>
@@ -249,7 +330,7 @@
 <td>The 4 digit code of the game the player is in</td>
 </tr>
 </tbody>
-</table><h4 id="return-value-4">Return Value</h4>
+</table><h4 id="return-value-7">Return Value</h4>
 <hr>
 <pre><code>{
     "player_id": 0
@@ -266,14 +347,14 @@
 </code></pre>
 <h3 id="get-all-players">Get All Players</h3>
 <p>This endpoint will get all the information about the all the players on the server.</p>
-<h4 id="http-request-5">HTTP Request</h4>
+<h4 id="http-request-8">HTTP Request</h4>
 <hr>
 <pre><code>GET http://&lt;localhost&gt;/test_access/get_all_players
 </code></pre>
-<h4 id="url-parameters-5">URL Parameters</h4>
+<h4 id="url-parameters-8">URL Parameters</h4>
 <hr>
 <p>None</p>
-<h4 id="return-value-5">Return Value</h4>
+<h4 id="return-value-8">Return Value</h4>
 <hr>
 <p>A JSON list, where each entry contains the following:</p>
 <pre><code>{
@@ -291,14 +372,14 @@
 </code></pre>
 <h3 id="get-game">Get Game</h3>
 <p>This endpoint will get all the information about the specified game.</p>
-<h4 id="http-request-6">HTTP Request</h4>
+<h4 id="http-request-9">HTTP Request</h4>
 <hr>
 <pre><code>POST http://&lt;localhost&gt;/test_access/get_game
     {
         "game_code": 9999
     }
 </code></pre>
-<h4 id="url-parameters-6">URL Parameters</h4>
+<h4 id="url-parameters-9">URL Parameters</h4>
 <hr>
 
 <table>
@@ -316,7 +397,7 @@
 <td>The 4 digit code of the game you want the info of</td>
 </tr>
 </tbody>
-</table><h4 id="return-value-6">Return Value</h4>
+</table><h4 id="return-value-9">Return Value</h4>
 <hr>
 <pre><code>{
     "game_id": 0
@@ -328,17 +409,17 @@
 </code></pre>
 <h3 id="get-all-games">Get All Games</h3>
 <p>This endpoint will get all the information about all the games on the server.</p>
-<h4 id="http-request-7">HTTP Request</h4>
+<h4 id="http-request-10">HTTP Request</h4>
 <hr>
 <pre><code>POST http://&lt;localhost&gt;/test_access/get_all_games
     {
         "game_code": 9999
     }
 </code></pre>
-<h4 id="url-parameters-7">URL Parameters</h4>
+<h4 id="url-parameters-10">URL Parameters</h4>
 <hr>
 <p>None</p>
-<h4 id="return-value-7">Return Value</h4>
+<h4 id="return-value-10">Return Value</h4>
 <hr>
 <p>A JSON list, where each entry contains the following:</p>
 <pre><code>{
@@ -362,19 +443,11 @@
 <tbody>
 <tr>
 <td>400</td>
-<td>Bad Request – Your request is invalid</td>
+<td>Bad Request – Your request was bad, maybe there is no such player or game, a player with that name already exists, etc. Check the server code to find out why.</td>
 </tr>
 <tr>
 <td>403</td>
 <td>Forbidden – You don’t have the privileges to make that request</td>
-</tr>
-<tr>
-<td>404</td>
-<td>Not Found – The specified player or game could not be found</td>
-</tr>
-<tr>
-<td>406</td>
-<td>Not Acceptable – There is already a player with this name</td>
 </tr>
 <tr>
 <td>500</td>
