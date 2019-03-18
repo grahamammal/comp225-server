@@ -31,6 +31,14 @@ def add_player():
     ).fetchone() is None:
         error=400
 
+    #checks if the game already started
+    if db.execute(
+        'SELECT game_state FROM games'
+        ' WHERE game_code = ?',
+        (game_code,)
+    ).fetchone()[] is 1:
+        error=400
+
     #checks if player already exists
     if db.execute(
         'SELECT player_id FROM players'
@@ -118,7 +126,6 @@ def got_target():
 
 
     return ('', 200)
-
 
 @bp.route('/won_game')
 def won_game():

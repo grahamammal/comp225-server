@@ -1,2 +1,3 @@
 include assassin_server/schema.sql
+graft assassin_server/templates
 global-exclude *.pyc

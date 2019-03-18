@@ -39,8 +39,7 @@ def create_app(test_config=None):
     # a simple page that says hello
     @app.route('/hello')
     def hello():
-        abort(400)
-        return "Hello"
+        return "Hello, World!"
 
     @app.errorhandler(400)
     def bad_request(error):
