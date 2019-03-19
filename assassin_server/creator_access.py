@@ -1,10 +1,11 @@
 import functools, random
 
 from flask import (
-    Blueprint, flash, g, redirect, render_template, request, session, url_for, jsonify, abort
+    Blueprint, flash, g, redirect, render_template, request, session, url_for, jsonify, abort, redirect, url_for
 )
 
 from assassin_server.db import get_db, row_to_dict, table_to_dict
+from assassin_server.player_access import won_game
 
 bp = Blueprint('creator_access', __name__, url_prefix='/creator_access')
 
@@ -14,6 +15,10 @@ bp = Blueprint('creator_access', __name__, url_prefix='/creator_access')
 def start_hunt():
     """Starts the hunting phase of the game"""
 
+    #makes sure your session has a player associated with it
+    if 'this_player_id' not in session:
+        abort(403)
+        
     player_id=session['this_player_id']
 
     db=get_db()
@@ -36,6 +41,10 @@ def start_hunt():
 
     players_with_target=generate_targets(game_id)
 
+    if len(players_with_target)<2:
+        return redirect(url_for('player_access.won_game'))
+
+
     for player in players_with_target:
         #not sure why I need to do this but it didn't work when I placed the dictionary access in the sql query
         target_first_name=player["target_first_name"]
@@ -55,7 +64,6 @@ def start_hunt():
 
     return ('', 200)
 
-
 @bp.route('/create_game', methods=['POST'])
 def create_game():
     """Creates a game in the data base with the specified name and rules, and returns the game code for that game."""
@@ -63,6 +71,9 @@ def create_game():
 
     game_name=content['game_name']
     game_rules=content['game_rules']
+
+    if game_name is None:
+        abort(400)
 
     db=get_db()
 

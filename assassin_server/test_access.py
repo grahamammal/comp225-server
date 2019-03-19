@@ -6,7 +6,7 @@ from flask import (
 )
 
 from assassin_server.db import get_db, row_to_dict, table_to_dict
-from assassin_server.player_access import generate_targets
+from assassin_server.creator_access import generate_targets
 
 bp = Blueprint('test_access', __name__, url_prefix='/test_access')
 

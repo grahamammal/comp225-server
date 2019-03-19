@@ -36,7 +36,7 @@ def add_player():
         'SELECT game_state FROM games'
         ' WHERE game_code = ?',
         (game_code,)
-    ).fetchone()[] is 1:
+    ).fetchone()[0] is 1:
         error=400
 
     #checks if player already exists
@@ -79,8 +79,13 @@ def add_player():
 # May want to add a way to ensure this is sent from our app
 @bp.route('/got_target')
 def got_target():
+    #makes sure your session has a player associated with it
+    if 'this_player_id' not in session:
+        abort(403)
 
-    player_id=session["this_player_id"]
+    player_id=session.get("this_player_id", None)
+
+
     db=get_db()
 
     target_id=db.execute(
@@ -152,6 +157,10 @@ def get_game_rules():
 @bp.route('/request_target', methods=['GET'])
 def request_target():
     """Requests the target of the player who made the request, using that players session info"""
+    #makes sure your session has a player associated with it
+    if 'this_player_id' not in session:
+        abort(403)
+
 
     player_id=session['this_player_id']
 
