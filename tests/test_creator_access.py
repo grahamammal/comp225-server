@@ -26,7 +26,7 @@ def test_create_game(client, game_name, game_rules, is_bad_request):
         json_data=response.get_json()
         assert 1000<=json_data['game_code'] and json_data['game_code']<10000
 
-@pytest.mark.parametrize(('num_players', 'is_creator_last', 'expect_status_code'), (
+@pytest.mark.parametrize(('num_players', 'is_creator_last', 'expected_status_code'), (
     (10, True, 200),
     (10, False, 403),
     (1, True, 302),
@@ -34,7 +34,7 @@ def test_create_game(client, game_name, game_rules, is_bad_request):
     (0, True, 403),
     (0, False, 403),
 ))
-def test_start_hunt(client, num_players, is_creator_last, expect_status_code):
+def test_start_hunt(client, num_players, is_creator_last, expected_status_code):
 
     for i in range(num_players):
         if i+1 == num_players and is_creator_last:
@@ -44,7 +44,7 @@ def test_start_hunt(client, num_players, is_creator_last, expect_status_code):
 
     response=client.get('/creator_access/start_hunt')
 
-    assert response.status_code==expect_status_code
+    assert response.status_code==expected_status_code
 
 def generate_player(client, is_creator):
 
@@ -61,7 +61,7 @@ def generate_player(client, is_creator):
 def test_max_games(client, app):
     with app.app_context():
         db=get_db()
-        for i in range(1001, 9999):
+        for i in range(1003, 9999):
             db.execute(
                 'INSERT INTO games (game_name, game_rules, game_code, game_state)'
                 ' VALUES (?, ?, ?, ?)',
@@ -69,9 +69,10 @@ def test_max_games(client, app):
             )
 
         db.commit()
-    response=client.post(
-        '/creator_access/create_game',
-        json={'game_name':'name', 'game_rules':'rules'}
-    )
+    for i in range(5):
+        response=client.post(
+            '/creator_access/create_game',
+            json={'game_name':'name', 'game_rules':'rules'}
+        )
 
     assert response.status_code==500

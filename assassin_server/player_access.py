@@ -19,8 +19,6 @@ def add_player():
     is_creator=content['is_creator']
     game_code=content['game_code']
 
-    error=None
-
     db=get_db()
 
     #checks if the game exists
@@ -29,7 +27,7 @@ def add_player():
         ' WHERE game_code = ?',
         (game_code,)
     ).fetchone() is None:
-        error=400
+        abort(400)
 
     #checks if the game already started
     if db.execute(
@@ -37,7 +35,7 @@ def add_player():
         ' WHERE game_code = ?',
         (game_code,)
     ).fetchone()[0] is 1:
-        error=400
+        abort(400)
 
     #checks if player already exists
     if db.execute(
@@ -45,7 +43,7 @@ def add_player():
         ' WHERE player_first_name = ? AND player_last_name=? AND game_code = ?',
         (player_first_name, player_last_name, game_code)
     ).fetchone() is not None:
-        error= 400
+        abort(400)
 
     #checks if there is already a creator of the game
     if db.execute(
@@ -53,26 +51,24 @@ def add_player():
         ' WHERE game_code = ? AND is_creator = 1',
         (game_code,)
     ).fetchone() is not None and is_creator is 1:
-        error= 400
+        abort(400)
 
     #adds player to database if nothing went wrong
-    if error is None:
-        db.execute(
-            'INSERT INTO players'
-            ' (player_first_name, player_last_name,is_creator, game_code, is_alive, disputed_Got)'
-            ' VALUES (?, ?, ?, ?, 1, 0)',
-            (player_first_name, player_last_name, is_creator, game_code)
-        )
-        db.commit()
 
-        session['this_player_id']=db.execute(
-            'SELECT player_id FROM players'
-            ' WHERE player_first_name = ? AND player_last_name=? AND game_code = ?',
-            (player_first_name, player_last_name, game_code)
-        ).fetchone()[0]
+    db.execute(
+        'INSERT INTO players'
+        ' (player_first_name, player_last_name,is_creator, game_code, is_alive, disputed_Got)'
+        ' VALUES (?, ?, ?, ?, 1, 0)',
+        (player_first_name, player_last_name, is_creator, game_code)
+    )
+    db.commit()
 
-    if error is not None:
-        abort(error)
+    session['this_player_id']=db.execute(
+        'SELECT player_id FROM players'
+        ' WHERE player_first_name = ? AND player_last_name=? AND game_code = ?',
+        (player_first_name, player_last_name, game_code)
+    ).fetchone()[0]
+
 
     return ('', 200)
 
@@ -92,12 +88,13 @@ def got_target():
         'SELECT target_id FROM players'
         ' WHERE player_id = ?',
         (player_id, )
-    ).fetchone()[0]
+    ).fetchone()
 
     #checks that the player has a target
     if target_id is None:
         abort(400)
-
+    else:
+        target_id=target_id[0]
     #retrieve the target of your target
     new_target=row_to_dict(
         db.execute(
@@ -109,7 +106,7 @@ def got_target():
 
     #checks if you just got the second to last player, meaning you won
     if player_id is new_target["target_id"]:
-        return redirect(url_for('won_game'))
+        return redirect(url_for('player_access.won_game'))
 
     #remove your target
     db.execute(
@@ -175,7 +172,7 @@ def request_target():
 
 
 
-    if target is None:
+    if target[0] is None and target[1] is None and target[2] is None:
         abort(400) #the player has no target
 
     output=row_to_dict(target)
