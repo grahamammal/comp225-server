@@ -18,7 +18,7 @@ def start_hunt():
     #makes sure your session has a player associated with it
     if 'this_player_id' not in session:
         abort(403)
-        
+
     player_id=session['this_player_id']
 
     db=get_db()
@@ -33,18 +33,18 @@ def start_hunt():
     if creator_status is None or creator_status[0] is 0:
         abort(403)
 
-    game_id=db.execute(
+    game_code=db.execute(
         'SELECT game_code FROM players'
         ' WHERE player_id = ?',
         (player_id,)
     ).fetchone()[0]
 
-    players_with_target=generate_targets(game_id)
+    players_with_target=generate_targets(game_code)
 
     if len(players_with_target)<2:
         return redirect(url_for('player_access.won_game'))
 
-
+    #give players targets
     for player in players_with_target:
         #not sure why I need to do this but it didn't work when I placed the dictionary access in the sql query
         target_first_name=player["target_first_name"]
@@ -61,6 +61,15 @@ def start_hunt():
             player_id)
         )
         db.commit()
+
+    #update game_state
+    db.execute(
+        'UPDATE games'
+        ' SET game_state = 1'
+        ' WHERE game_code = ?',
+        (game_code,)
+    )
+    db.commit()
 
     return ('', 200)
 

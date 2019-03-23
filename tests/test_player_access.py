@@ -32,10 +32,10 @@ def test_add_player(client,
 @pytest.mark.parametrize(
     ('this_player_id','expected_status_code'),
     (
-        (None, 403),
-        (3, 400),
-        (5, 302),
-        (0, 200),
+        (None, 403), # no such player
+        (3, 400), # player has no target
+        (5, 302), # player wins
+        (0, 200), # player got target but didn't win
     )
 )
 def test_got_target(app, this_player_id, expected_status_code):
