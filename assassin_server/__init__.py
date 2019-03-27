@@ -3,9 +3,10 @@ import redis
 
 from flask import Flask, session, abort, render_template
 from flask_session import Session
-
+from datetime import timedelta
 
 SESSION_TYPE = 'redis'
+PERMANANT_SESSION_LIFETIME = timedelta(days=365)
 sess = Session()
 
 def create_app(test_config=None):
