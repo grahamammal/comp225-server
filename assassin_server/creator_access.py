@@ -6,6 +6,7 @@ from flask import (
 
 from assassin_server.db import get_db, row_to_dict, table_to_dict
 from assassin_server.player_access import won_game
+from assassin_server.__init__ import internal_error
 
 bp = Blueprint('creator_access', __name__, url_prefix='/creator_access')
 
@@ -17,7 +18,7 @@ def start_hunt():
 
     #makes sure your session has a player associated with it
     if 'this_player_id' not in session:
-        abort(403)
+        return (internal_error(4), 403)
 
     player_id=session['this_player_id']
 
@@ -31,13 +32,15 @@ def start_hunt():
 
     #forbidden if the player isn't the creator or if the player doesn't exist
     if creator_status is None or creator_status[0] is 0:
-        abort(403)
+        return (internal_error(6), 403)
 
     game_code=db.execute(
         'SELECT game_code FROM players'
         ' WHERE player_id = ?',
         (player_id,)
     ).fetchone()[0]
+
+
 
     players_with_target=generate_targets(game_code)
 
@@ -82,7 +85,7 @@ def create_game():
     game_rules=content['game_rules']
 
     if game_name is None:
-        abort(400)
+        return (internal_error(7), 400)
 
     db=get_db()
 
@@ -104,7 +107,7 @@ def create_game():
 
         attempts=attempts+1
         if attempts>(max_code-min_code):
-            abort(500)#there are no game codes left
+            return (internal_error(8), 500)
 
 
 

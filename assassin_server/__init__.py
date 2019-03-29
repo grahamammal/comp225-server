@@ -1,7 +1,7 @@
 import os
 import redis
 
-from flask import Flask, session, abort, render_template
+from flask import Flask, session, abort, render_template, jsonify
 from flask_session import Session
 from datetime import timedelta
 
@@ -40,16 +40,7 @@ def create_app(test_config=None):
     # a simple page that says hello
     @app.route('/hello')
     def hello():
-        return "Hello, World!"
-
-    @app.errorhandler(400)
-    def bad_request(error):
-        return render_template('bad_request.html'), 400
-
-    @app.errorhandler(403)
-    def forbidden(error):
-        return render_template('forbidden.html'), 403
-
+        return 'Hello, World!'
 
 
     #adds database to the app
@@ -68,7 +59,19 @@ def create_app(test_config=None):
     from . import creator_access
     app.register_blueprint(creator_access.bp)
 
-    app.register_error_handler(400, bad_request)
-    app.register_error_handler(403, forbidden)
-
     return app
+
+def internal_error(error_id):
+    error_dict={
+        0: jsonify({'message':'The game does not exist', 'error_id':0}),
+        1: jsonify({'message':'The game is already started', 'error_id':1}),
+        2: jsonify({'message':'The name you tried to join with is already taken', 'error_id':2}),
+        3: jsonify({'message':'There is already a creator of this game', 'error_id':3}),
+        4: jsonify({'message':'There is no player associated with this device', 'error_id':4}),
+        5: jsonify({'message':'You do not have a target', 'error_id':5}),
+        6: jsonify({'message':'You are not the creator of this game', 'error_id':6}),
+        7: jsonify({'message':'You must supply a name for this game', 'error_id':7}),
+        8: jsonify({'message':'There are no more available game codes', 'error_id':8})
+    }
+
+    return error_dict[error_id]
