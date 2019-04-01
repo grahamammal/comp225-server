@@ -27,7 +27,7 @@ On Mac:
 
 On Windows
 ```
-venv\Scripts\activatee
+venv\Scripts\activate
 ```
 
 Install flask

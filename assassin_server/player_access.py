@@ -5,6 +5,7 @@ from flask import (
 )
 
 from assassin_server.db import get_db, row_to_dict
+from assassin_server.__init__ import internal_error
 
 bp = Blueprint('player_access', __name__, url_prefix='/player_access')
 
@@ -27,7 +28,7 @@ def add_player():
         ' WHERE game_code = ?',
         (game_code,)
     ).fetchone() is None:
-        abort(400)
+        return (internal_error(0), 400)
 
     #checks if the game already started
     if db.execute(
@@ -35,7 +36,7 @@ def add_player():
         ' WHERE game_code = ?',
         (game_code,)
     ).fetchone()[0] is 1:
-        abort(400)
+        return (internal_error(1), 400)
 
     #checks if player already exists
     if db.execute(
@@ -43,7 +44,8 @@ def add_player():
         ' WHERE player_first_name = ? AND player_last_name=? AND game_code = ?',
         (player_first_name, player_last_name, game_code)
     ).fetchone() is not None:
-        abort(400)
+        return (internal_error(2), 400)
+
 
     #checks if there is already a creator of the game
     if db.execute(
@@ -51,7 +53,7 @@ def add_player():
         ' WHERE game_code = ? AND is_creator = 1',
         (game_code,)
     ).fetchone() is not None and is_creator is 1:
-        abort(400)
+        return (internal_error(3), 400)
 
     #adds player to database if nothing went wrong
 
@@ -77,7 +79,7 @@ def add_player():
 def got_target():
     #makes sure your session has a player associated with it
     if 'this_player_id' not in session:
-        abort(403)
+        return (internal_error(4), 403)
 
     player_id=session.get("this_player_id", None)
 
@@ -91,8 +93,9 @@ def got_target():
     ).fetchone()
 
     #checks that the player has a target
-    if target_id is None:
-        abort(400)
+    if target_id[0] is None:
+        return (internal_error(5), 400)
+
     else:
         target_id=target_id[0]
     #retrieve the target of your target
@@ -156,7 +159,7 @@ def request_target():
     """Requests the target of the player who made the request, using that players session info"""
     #makes sure your session has a player associated with it
     if 'this_player_id' not in session:
-        abort(403)
+        return (internal_error(4), 403)
 
 
     player_id=session['this_player_id']
@@ -173,7 +176,7 @@ def request_target():
 
 
     if target[0] is None and target[1] is None and target[2] is None:
-        abort(400) #the player has no target
+        return (internal_error(5), 400)
 
     output=row_to_dict(target)
     return jsonify(output)
