@@ -1,0 +1,9 @@
+-e git+https://github.com/grahamammal/comp225-server.git@30c0df7825ce985a0db6b633f7f823668e2089c4#egg=assassin_server
+Click==7.0
+Flask==1.0.2
+Flask-Session==0.3.1
+itsdangerous==1.1.0
+Jinja2==2.10
+MarkupSafe==1.1.1
+redis==3.2.1
+Werkzeug==0.15.1
