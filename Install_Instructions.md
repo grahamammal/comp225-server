@@ -30,30 +30,28 @@ On Windows
 venv\Scripts\activate
 ```
 
-Install flask
-
+Install dependencies:
 ```
-pip install Flask
+pip install -r requirements.txt
 ```
 
-
-
-Run the application:
-
-
+Configure run environment
 
 On Mac:
 ```
 export FLASK_APP=assassin_server
 export FLASK_ENV=development
-flask init-db
-flask run
 ```
 
 On Windows:
 ```
 set FLASK_APP=assassin_server
 set FLASK_ENV=development
+```
+
+
+Run the application:
+```
 flask init-db
 flask run
 ```
