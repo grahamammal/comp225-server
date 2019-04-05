@@ -59,6 +59,11 @@ def create_app(test_config=None):
     from . import creator_access
     app.register_blueprint(creator_access.bp)
 
+    #adds the status_access blueprint to the app
+    from . import status_access
+    app.register_blueprint(status_access.bp)
+
+
     return app
 
 def internal_error(error_id):
