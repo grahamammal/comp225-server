@@ -136,21 +136,22 @@ def got_target():
 def won_game():
     return jsonify({"win": True})
 
-@bp.route('/get_game_rules',  methods=['POST'])
-def get_game_rules():
+@bp.route('/get_game_info',  methods=['POST'])
+def get_game_info():
     content=request.get_json()
-
     game_code=content["game_code"]
 
-
     db=get_db()
-    rules=db.execute(
-        'SELECT game_rules FROM games'
+    info=db.execute(
+        'SELECT game_rules, game_name FROM games'
         ' WHERE game_code = ?',
         (game_code,)
     ).fetchone()
 
-    output=row_to_dict(rules)
+    if info is None:
+        return (internal_error(0), 400)
+
+    output=row_to_dict(info)
     return jsonify(output)
 
 #may want to ensure request is sent from app

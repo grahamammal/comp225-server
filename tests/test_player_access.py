@@ -58,13 +58,13 @@ def test_won_game(client):
     response=client.get('/player_access/won_game')
 
 @pytest.mark.parametrize(
-    ('game_code', 'expected_rules'),
+    ('game_code', 'expected_rules', 'expected_name'),
     (
-        (1000, 'no rules dweeb'),
-        (1001, None),
+        (1000, 'no rules dweeb', 'test_game'),
+        (1001, None, 'player_access_test_game'),
     )
 )
-def test_get_game_rules(client, game_code, expected_rules):
+def test_get_game_info(client, game_code, expected_rules, expected_name):
     response= client.post(
         '/player_access/get_game_rules',
         json={"game_code":game_code}

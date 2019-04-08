@@ -29,11 +29,11 @@ def is_alive():
 
     return jsonify(row_to_dict(is_alive))
 
-@bp.route('/is_game_started')
+@bp.route('/is_game_started', methods=['POST'])
 def is_game_started():
 
-    if 'this_player_id' not in session:
-        return (internal_error(4), 403)
+    content=request.get_json()
+    game_code=content["game_code"]
 
     player_id=session['this_player_id']
 
