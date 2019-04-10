@@ -88,6 +88,20 @@ def got_target():
 
     db=get_db()
 
+    #checks that the player is alive
+    is_alive=db.execute(
+        'SELECT is_alive FROM players'
+        ' WHERE player_id = ?',
+        (player_id, )
+    ).fetchone()[0]
+
+    if str(is_alive)==str(0):
+        return (internal_error(9), 400)
+
+    #checks that the player has a target
+    if target_id[0] is None:
+        return (internal_error(5), 400)
+
     target_id=db.execute(
         'SELECT target_id FROM players'
         ' WHERE player_id = ?',
