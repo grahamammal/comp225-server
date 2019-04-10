@@ -139,7 +139,7 @@ def player_list():
         (player_id,)
     ).fetchone()
 
-    if creator_status is None or creator_status[0]==0
+    if creator_status is None or creator_status[0]==0:
         return (internal_error(6), 403)
 
 
