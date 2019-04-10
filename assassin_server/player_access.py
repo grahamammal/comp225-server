@@ -47,12 +47,14 @@ def add_player():
         return (internal_error(2), 400)
 
 
+
+
     #checks if there is already a creator of the game
     if db.execute(
         'SELECT player_id FROM players'
         ' WHERE game_code = ? AND is_creator = 1',
         (game_code,)
-    ).fetchone() is not None and is_creator is 1:
+    ).fetchone() is not None and is_creator == str(1):
         return (internal_error(3), 400)
 
     #adds player to database if nothing went wrong
