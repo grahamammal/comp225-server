@@ -54,7 +54,7 @@ def add_player():
         'SELECT player_id FROM players'
         ' WHERE game_code = ? AND is_creator = 1',
         (game_code,)
-    ).fetchone() is not None and is_creator == str(1):
+    ).fetchone() is not None and str(is_creator) == str(1):
         return (internal_error(3), 400)
 
     #adds player to database if nothing went wrong
