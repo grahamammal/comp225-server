@@ -104,6 +104,11 @@ def got_target_new_target(app, getter_id):
     return new_target_id
 
 def add_player_assertions(client, app, player_first_name, player_last_name,is_creator, game_code):
+    #get the target info so we can let them remove themselves from the game
+    response = client.get('/player_access/request_target')
+
+
+
     response= client.post(
         '/player_access/add_player',
         json= {

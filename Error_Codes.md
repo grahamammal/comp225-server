@@ -11,3 +11,4 @@
 | 6 | 403 | "You aren't the creator of this game" |
 | 7 | 400 | "You must supply a name for this game" |
 | 8 | 500 | "There are no more available game codes" |
+| 9 | 400 | "You are not dead or the last player"
