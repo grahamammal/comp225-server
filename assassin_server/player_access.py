@@ -113,9 +113,10 @@ def got_target():
     if player_id is new_target["target_id"]:
         return redirect(url_for('player_access.won_game'))
 
-    #remove your target
+    #kill your target
     db.execute(
-        'DELETE FROM players'
+        'UPDATE players'
+        ' SET is_alive = 0'
         ' WHERE player_id = ?',
         (target_id,)
     )
@@ -183,3 +184,10 @@ def request_target():
 
     output=row_to_dict(target)
     return jsonify(output)
+
+@bp.route('/remove_from_game', methods=['GET'])
+def remove_from_game():
+    if 'this_player_id' not in session:
+        return (internal_error(4), 403)
+
+    player_id=session['this_player_id']
