@@ -1,6 +1,7 @@
 import pytest
 from flask import session
-from assassin_server.db import get_db
+from assassin_server.db import get_db, row_to_dict
+
 
 #For this test we'll run the example game in the TeX document
 def test_mock_game(client, app):
@@ -78,6 +79,15 @@ def test_mock_game(client, app):
     #make sure the target of Analeidi's target is Analeidi
     assert next_getter == creator_id
 
+    #find out who Analeidi's last target is:
+    last_target_id=None
+    with app.test_client() as c:
+        with c.session_transaction() as sess:
+            sess['this_player_id']=creator_id
+
+        response=c.get('/player_access/request_target')
+        last_target_id=response.get_json()['target_id']
+
     # We'll let Analeidi win the game
     with app.test_client() as c:
         with c.session_transaction() as sess:
@@ -86,10 +96,55 @@ def test_mock_game(client, app):
         response = c.get('/player_access/got_target')
         assert response.status_code == 302
 
-    #The game is now won, we still need to decide what to do now
+    #Remove Analeidi's last target
+    with app.test_client() as c:
+        with c.session_transaction() as sess:
+            sess['this_player_id']=last_target_id
+
+        response=c.get('/player_access/remove_from_game')
+        assert response.status_code == 200
+
+    #Make sure they're removed
+    with app.app_context():
+        assert get_db().execute(
+            'SELECT * FROM players'
+            ' WHERE player_id = ?',
+            (last_target_id, )
+        ).fetchone() is None
+
+    #Now Analeidi tells the game to remove her
+    with app.test_client() as c:
+        with c.session_transaction() as sess:
+            sess['this_player_id']=creator_id
+
+        response=c.get('/player_access/remove_from_game')
+        assert response.status_code == 200
+
+    #Make sure both she and the game are deleted
+    with app.app_context():
+        assert get_db().execute(
+            'SELECT * FROM players'
+            ' WHERE player_id = ?',
+            (creator_id, )
+        ).fetchone() is None
+
+        assert get_db().execute(
+            'SELECT * FROM games'
+            ' WHERE game_code = ?',
+            (game_code, )
+        ).fetchone() is None
 
 # Get's the target of a player and returns their new target's id
 def got_target_new_target(app, getter_id):
+
+    target_id=None
+    with app.app_context():
+        target_id=get_db().execute(
+            'SELECT target_id FROM players'
+            ' WHERE player_id = ?',
+            (getter_id,)
+        ).fetchone()[0]
+
     new_target_id=None
     with app.test_client() as c:
         with c.session_transaction() as sess:
@@ -101,9 +156,26 @@ def got_target_new_target(app, getter_id):
         assert response.status_code == 200
         new_target_id = response.get_json()['target_id']
 
+    with app.test_client() as c:
+        with c.session_transaction() as sess:
+            sess['this_player_id']=target_id
+
+        response=c.get('/player_access/remove_from_game')
+        assert response.status_code == 200
+
+    with app.app_context():
+        assert get_db().execute(
+            'SELECT * FROM players'
+            ' WHERE player_id = ?',
+            (target_id, )
+        ).fetchone() is None
+
     return new_target_id
 
 def add_player_assertions(client, app, player_first_name, player_last_name,is_creator, game_code):
+    #get the target info so we can let them remove themselves from the game
+
+
     response= client.post(
         '/player_access/add_player',
         json= {
@@ -113,6 +185,8 @@ def add_player_assertions(client, app, player_first_name, player_last_name,is_cr
             'game_code':game_code
         }
     )
+
+
 
     assert response.status_code  == 200
     with app.app_context():

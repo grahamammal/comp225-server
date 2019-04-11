@@ -35,17 +35,7 @@ def is_game_started():
     content=request.get_json()
     game_code=content["game_code"]
 
-    player_id=session['this_player_id']
-
     db=get_db()
-    game_code=db.execute(
-        'SELECT game_code FROM players'
-        ' WHERE player_id=?',
-        (player_id,)
-    ).fetchone()[0]
-
-
-
     is_game_started=db.execute(
         'SELECT game_state FROM games'
         ' WHERE game_code=?',
@@ -53,7 +43,8 @@ def is_game_started():
     ).fetchone()
 
 
+
     if is_game_started is None:
-        return('Something went very wrong', 500)
+        return(internal_error(5), 400)
 
     return jsonify(row_to_dict(is_game_started))

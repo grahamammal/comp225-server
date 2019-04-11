@@ -47,12 +47,14 @@ def add_player():
         return (internal_error(2), 400)
 
 
+
+
     #checks if there is already a creator of the game
     if db.execute(
         'SELECT player_id FROM players'
         ' WHERE game_code = ? AND is_creator = 1',
         (game_code,)
-    ).fetchone() is not None and is_creator is 1:
+    ).fetchone() is not None and str(is_creator) == str(1):
         return (internal_error(3), 400)
 
     #adds player to database if nothing went wrong
@@ -86,6 +88,17 @@ def got_target():
 
     db=get_db()
 
+    #checks that the player is alive
+    is_alive=db.execute(
+        'SELECT is_alive FROM players'
+        ' WHERE player_id = ?',
+        (player_id, )
+    ).fetchone()[0]
+
+    if str(is_alive)==str(0):
+        return (internal_error(9), 400)
+
+
     target_id=db.execute(
         'SELECT target_id FROM players'
         ' WHERE player_id = ?',
@@ -107,13 +120,11 @@ def got_target():
         ).fetchone()
     )
 
-    #checks if you just got the second to last player, meaning you won
-    if player_id is new_target["target_id"]:
-        return redirect(url_for('player_access.won_game'))
 
-    #remove your target
+    #kill your target
     db.execute(
-        'DELETE FROM players'
+        'UPDATE players'
+        ' SET is_alive = 0'
         ' WHERE player_id = ?',
         (target_id,)
     )
@@ -128,7 +139,9 @@ def got_target():
     )
     db.commit()
 
-
+    #checks if you just got the second to last player, meaning you won
+    if player_id is new_target["target_id"]:
+        return jsonify({"win": True}), 302
 
     return ('', 200)
 
@@ -181,3 +194,67 @@ def request_target():
 
     output=row_to_dict(target)
     return jsonify(output)
+
+@bp.route('/remove_from_game', methods=['GET'])
+def remove_from_game():
+    if 'this_player_id' not in session:
+        return (internal_error(4), 403)
+
+    player_id=session['this_player_id']
+
+    db=get_db()
+
+    #check if the player won the game already
+    game_code=db.execute(
+        'SELECT game_code FROM players'
+        ' WHERE player_id = ?',
+        (player_id, )
+    ).fetchone()
+
+    if game_code is None:
+        return (internal_error(4), 403)
+
+    all_players=db.execute(
+        'SELECT * FROM players'
+        ' WHERE game_code = ? AND player_id != ?',
+        (game_code[0], player_id)
+    ).fetchone()
+
+    if all_players is None:
+        db.execute(
+            'DELETE FROM players'
+            ' WHERE player_id = ?',
+            (player_id, )
+        )
+        db.commit()
+
+        db.execute(
+            'DELETE FROM games'
+            ' WHERE game_code = ?',
+            (game_code[0], )
+        )
+        db.commit()
+
+        return '', 200
+
+
+    is_alive = db.execute(
+        'SELECT is_alive FROM players'
+        ' WHERE player_id = ?',
+        (player_id,)
+    ).fetchone()[0]
+
+    #check if player is Alive
+    if str(is_alive) == str(1):
+        return (internal_error(9), 400)
+
+
+    #remove them from the game
+    db.execute(
+        'DELETE FROM players'
+        ' WHERE player_id = ?',
+        (player_id, )
+    )
+    db.commit()
+
+    return '', 200

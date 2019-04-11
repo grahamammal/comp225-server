@@ -1,60 +1,68 @@
-﻿
-﻿# Assassin Server API Docs
+
+# Assassin Server API Docs
 _Analeidi Barrera,_
 _Ellen Graham,_
 _Corey Pieper,_
 _Jacob Weightman_
 
 # Table Of Contents
-- [Assassin Server API Docs](#assassin-server-api-docs)
-  * [Player Requests](#player-requests)
-    + [Get Game Rules](#get-game-rules)
-        * [HTTP Request](#http-request)
-        * [URL Parameters](#url-parameters)
-        * [Return Value](#return-value)
-	+ [Got Target](#got-target)
-	    * [HTTP Request](#http-request)
-	    * [URL Parameters](#url-parameters)
-	    * [Return Value](#return-value)
-	+ [Won Game](#won-game)
-        * [HTTP Request](#http-request)
-        * [URL Parameters](#url-parameters)
-        * [Return Value](#return-value)
-	+ [Add Player](#add-player)
-		* [HTTP Request](#http-request)
-		* [URL Parameters](#url-parameters)
-		* [Return Value](#return-value)
-    + [Request Target](#request-target)
-        * [HTTP Request](#http-request-1)
-        * [URL Parameters](#url-parameters-1)
-        * [Return Value](#return-value-1)
-  * [Game Creator Requests](#game-creator-requests)
-    + [Create Game](#create-game)
-        * [HTTP Request](#http-request-2)
-        * [URL Parameters](#url-parameters-2)
-        * [Return Value](#return-value-2)
-    + [Start Hunt](#start-hunt)
-        * [HTTP Request](#http-request-3)
-        * [URL Parameters](#url-parameters-3)
-        * [Return Value](#return-value-3)
-  * [Test Requests](#test-requests)
-    + [Get Player](#get-player)
-        * [HTTP Request](#http-request-4)
-        * [URL Parameters](#url-parameters-4)
-        * [Return Value](#return-value-4)
-    + [Get All Players](#get-all-players)
-        * [HTTP Request](#http-request-5)
-        * [URL Parameters](#url-parameters-5)
-        * [Return Value](#return-value-5)
-    + [Get Game](#get-game)
-        * [HTTP Request](#http-request-6)
-        * [URL Parameters](#url-parameters-6)
-        * [Return Value](#return-value-6)
-    + [Get All Games](#get-all-games)
-        * [HTTP Request](#http-request-7)
-        * [URL Parameters](#url-parameters-7)
-        * [Return Value](#return-value-7)
-  * [Errors](#errors)
+- [Player Requests](#player-requests)
+  * [Get Game Info](#get-game-info)
+    + [HTTP Request](#http-request)
+    + [URL Parameters](#url-parameters)
+    + [Return Value](#return-value)
+  * [Got Target](#got-target)
+    + [HTTP Request](#http-request-1)
+    + [URL Parameters](#url-parameters-1)
+    + [Return Value](#return-value-1)
+  * [Won Game](#won-game)
+    + [HTTP Request](#http-request-2)
+    + [URL Parameters](#url-parameters-2)
+    + [Return Value](#return-value-2)
+  * [Add Player](#add-player)
+    + [HTTP Request](#http-request-3)
+    + [URL Parameters](#url-parameters-3)
+    + [Return Value](#return-value-3)
+  * [Request Target](#request-target)
+    + [HTTP Request](#http-request-4)
+    + [URL Parameters](#url-parameters-4)
+    + [Return Value](#return-value-4)
+- [Game Creator Requests](#game-creator-requests)
+  * [Create Game](#create-game)
+    + [HTTP Request](#http-request-5)
+    + [URL Parameters](#url-parameters-5)
+    + [Return Value](#return-value-5)
+  * [Start Hunt](#start-hunt)
+    + [HTTP Request](#http-request-6)
+    + [URL Parameters](#url-parameters-6)
+      - [Return Value](#return-value-6)
+- [Status Requests](#status-requests)
+  * [Is Alive](#is-alive)
+    + [HTTP Request](#http-request-7)
+    + [URL Parameters](#url-parameters-7)
+    + [Return Value](#return-value-7)
+  * [Is Game Started](#is-game-started)
+    + [HTTP Request](#http-request-8)
+    + [URL Parameters](#url-parameters-8)
+    + [Return Value](#return-value-8)
+- [Debug Requests](#debug-requests)
+  * [Get Player](#get-player)
+    + [HTTP Request](#http-request-9)
+    + [URL Parameters](#url-parameters-9)
+    + [Return Value](#return-value-9)
+  * [Get All Players](#get-all-players)
+    + [HTTP Request](#http-request-10)
+    + [URL Parameters](#url-parameters-10)
+    + [Return Value](#return-value-10)
+  * [Get Game](#get-game)
+    + [HTTP Request](#http-request-11)
+    + [URL Parameters](#url-parameters-11)
+    + [Return Value](#return-value-11)
+  * [Get All Games](#get-all-games)
+    + [HTTP Request](#http-request-12)
+    + [URL Parameters](#url-parameters-12)
+    + [Return Value](#return-value-12)
+- [Errors](#errors)
 
 
 
@@ -64,14 +72,14 @@ _Jacob Weightman_
 
 ## Player Requests
 
-### Get Game Rules
+### Get Game Info
 
-This endpoint will return the game rules of the specified game
+This endpoint will return the game name and rules of the specified game
 
 #### HTTP Request
 ---
 ```
-POST http://<localhost>/player_access/get_game_rules
+POST http://<localhost>/player_access/get_game_info
     {
         "game_code": 9999
     }
@@ -88,6 +96,7 @@ POST http://<localhost>/player_access/get_game_rules
 ```
 {
 	"game_rules": "rules"
+	"game_name": "name"
 }
 ```
 ### Got Target
@@ -104,8 +113,7 @@ GET http://<localhost>/player_access/got_target
 ---
 None
 #### Return Value
----
-None
+Status Code 302 if you won the game.
 
 ### Won Game
 
@@ -231,7 +239,58 @@ None
 ---
 None
 
-## Test Requests
+## Status Requests
+
+### Is Alive
+
+This endpoint will tell the player asking if they are alive or not
+
+#### HTTP Request
+---
+```
+GET http://<localhost>/status_access/is_alive
+```
+
+#### URL Parameters
+---
+None
+
+#### Return Value
+---
+```
+{
+    "is_alive": 1
+}
+```
+
+### Is Game Started
+
+This endpoint will return whether the specified game has started or not
+
+#### HTTP Request
+---
+```
+POST http://<localhost>/status_access/is_game_started
+    {
+        "game_code": 9999
+    }
+```
+
+#### URL Parameters
+---
+| Parameter | Default | Description
+| ------ | ------ | ------|
+| game_code | None | The 4 digit code of the game the player is in |
+
+#### Return Value
+---
+```
+{
+    "is_alive": 1
+}
+```
+
+## Debug Requests
 _Note: These requests should only be used for testing, and not used in the actual app_
 ### Get Player
 
@@ -374,4 +433,3 @@ The assassin-server API uses the following error codes:
 | 400 | Bad Request -- Your request was bad, maybe there is no such player or game, a player with that name already exists, etc. Check the server code to find out why. |
 | 403 | Forbidden -- You don't have the privileges to make that request |
 | 500 | Internal Server Error -- Something went wrong with the server! Oh no!!
-

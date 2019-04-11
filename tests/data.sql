@@ -40,7 +40,14 @@ VALUES
       4, "test5", "test5",
       1, 0, 0,
       1002
+  ),
+  (
+      "test7", "test7",
+      null, null, null,
+      0, 0, 0,
+      1001
   );
+
 
 INSERT INTO games (game_name, game_rules, game_code, game_state)
 VALUES

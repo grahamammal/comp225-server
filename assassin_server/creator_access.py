@@ -125,9 +125,37 @@ def create_game():
 
     return jsonify(output)
 
+@bp.route('/player_list', methods=['GET'])
+def player_list():
+    if 'this_player_id' not in session:
+        return (internal_error(4), 403)
+
+    player_id=session['this_player_id']
+
+    db=get_db()
+    creator_status=get_db(
+        'SELECT is_creator, game_code FROM players'
+        'WHERE player_id=?',
+        (player_id,)
+    ).fetchone()
+
+    if creator_status is None or creator_status[0]==0:
+        return (internal_error(6), 403)
+
+
+    player_list=db.execute(
+        'SELECT player_first_name, player_last_name FROM players'
+        ' WHERE game_code = ?',
+        (creator_status[1],)
+    ).fetchall()
+
+    output=table_to_dict(player_list)
+    return jsonify(output)
+
 #gives each player a target that fits the rules of the game
 def generate_targets(game_code):
     db=get_db()
+
 
     players_with_target=[]
     players_without_target=table_to_dict(
@@ -138,29 +166,36 @@ def generate_targets(game_code):
         ).fetchall()
     )
 
-    #give a target to the n-1 players
-    n=len(players_without_target)
-    last_assigned_target_index=0
-    for i in range(0, n-1):
+    #checks if there is only one player
+    if len(players_without_target)==0:
+        players_with_target[i]["target_first_name"]=players_without_target[0]["player_first_name"]
+        players_with_target[i]["target_last_name"]=players_without_target[0]["player_last_name"]
+        players_with_target[i]["target_id"]=players_without_target[0]["player_id"]
+    else:
+
+        #give a target to the n-1 players
+        n=len(players_without_target)
+        last_assigned_target_index=0
+        for i in range(0, n-1):
+            players_with_target.append(
+                players_without_target.pop(last_assigned_target_index)
+            )
+
+            last_assigned_target_index=random.randint(0, len(players_without_target)-1)
+
+
+            players_with_target[i]["target_first_name"]=players_without_target[last_assigned_target_index]["player_first_name"]
+            players_with_target[i]["target_last_name"]=players_without_target[last_assigned_target_index]["player_last_name"]
+            players_with_target[i]["target_id"]=players_without_target[last_assigned_target_index]["player_id"]
+
+        #give a target to the last player
         players_with_target.append(
-            players_without_target.pop(last_assigned_target_index)
+            players_without_target.pop(0)
         )
 
-        last_assigned_target_index=random.randint(0, len(players_without_target)-1)
-
-
-        players_with_target[i]["target_first_name"]=players_without_target[last_assigned_target_index]["player_first_name"]
-        players_with_target[i]["target_last_name"]=players_without_target[last_assigned_target_index]["player_last_name"]
-        players_with_target[i]["target_id"]=players_without_target[last_assigned_target_index]["player_id"]
-
-    #give a target to the last player
-    players_with_target.append(
-        players_without_target.pop(0)
-    )
-
-    players_with_target[n-1]["target_first_name"]=players_with_target[0]["player_first_name"]
-    players_with_target[n-1]["target_last_name"]=players_with_target[0]["player_last_name"]
-    players_with_target[n-1]["target_id"]=players_with_target[0]["player_id"]
+        players_with_target[n-1]["target_first_name"]=players_with_target[0]["player_first_name"]
+        players_with_target[n-1]["target_last_name"]=players_with_target[0]["player_last_name"]
+        players_with_target[n-1]["target_id"]=players_with_target[0]["player_id"]
 
 
     return players_with_target
