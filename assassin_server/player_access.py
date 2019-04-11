@@ -120,9 +120,6 @@ def got_target():
         ).fetchone()
     )
 
-    #checks if you just got the second to last player, meaning you won
-    if player_id is new_target["target_id"]:
-        return redirect(url_for('player_access.won_game'))
 
     #kill your target
     db.execute(
@@ -142,7 +139,9 @@ def got_target():
     )
     db.commit()
 
-
+    #checks if you just got the second to last player, meaning you won
+    if player_id is new_target["target_id"]:
+        return jsonify({"win": True}), 302
 
     return ('', 200)
 
