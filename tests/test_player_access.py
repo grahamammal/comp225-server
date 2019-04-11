@@ -95,6 +95,7 @@ def test_request_target(app, this_player_id, expected_error_id,expected_status_c
 
         assert response.status_code == expected_status_code
         if expected_error_id is not None:
+            print(response)
             assert response.get_json()['error_id']==expected_error_id
         else:
             assert response.get_json()['target_id']==2
