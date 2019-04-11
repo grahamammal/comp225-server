@@ -3,6 +3,7 @@ DROP TABLE IF EXISTS games;
 
 CREATE TABLE players (
   player_id INTEGER PRIMARY KEY AUTOINCREMENT,
+  player_kill_code INTEGER,
   player_first_name TEXT NOT NULL,
   player_last_name TEXT NOT NULL,
 
