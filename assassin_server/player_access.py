@@ -9,7 +9,7 @@ from assassin_server.__init__ import internal_error
 
 bp = Blueprint('player_access', __name__, url_prefix='/player_access')
 
-@bp.route('/add_player',  methods=['POST'])
+@bp.route('/add_player', methods=['POST'])
 def add_player():
     """Adds a player with the given name to the game with the given game code"""
 
@@ -19,6 +19,7 @@ def add_player():
     player_last_name=content['player_last_name']
     is_creator=content['is_creator']
     game_code=content['game_code']
+
 
     db=get_db()
 
@@ -45,8 +46,6 @@ def add_player():
         (player_first_name, player_last_name, game_code)
     ).fetchone() is not None:
         return (internal_error(2), 400)
-
-
 
 
     #checks if there is already a creator of the game
@@ -77,14 +76,13 @@ def add_player():
     return ('', 200)
 
 # May want to add a way to ensure this is sent from our app
-@bp.route('/got_target')
+@bp.route('/got_target', methods=['POST'])
 def got_target():
     #makes sure your session has a player associated with it
     if 'this_player_id' not in session:
         return (internal_error(4), 403)
 
     player_id=session.get("this_player_id", None)
-
 
     db=get_db()
 
@@ -111,16 +109,28 @@ def got_target():
 
     else:
         target_id=target_id[0]
-    #retrieve the target of your target
+
+    #asking the player to provide her/his target's kill code
+    guessed_target_kill_code = request.get_json()['guessed_target_kill_code']
+
+    #this is the actual target's kill code
+    target_kill_code=db.execute(
+        'SELECT player_kill_code FROM players'
+        ' WHERE player_id = ?',
+        (target_id, )
+    ).fetchone()[0]
+
+    if guessed_target_kill_code != target_kill_code:
+        return(internal_error(10), 400)
+
+    # retrieve the target of your target
     new_target=row_to_dict(
-        db.execute(
+    db.execute(
             'SELECT target_first_name, target_last_name, target_id FROM players'
             ' WHERE player_id = ?',
             (target_id, )
         ).fetchone()
     )
-
-
     #kill your target
     db.execute(
         'UPDATE players'
@@ -128,17 +138,15 @@ def got_target():
         ' WHERE player_id = ?',
         (target_id,)
     )
-
     #set the target of your target to your target
     db.execute(
         'UPDATE players'
         ' SET target_first_name = ?, target_last_name = ?, target_id = ?'
         ' WHERE player_id = ?',
         (new_target['target_first_name'], new_target['target_last_name'], new_target['target_id'],
-         player_id)
+        player_id)
     )
     db.commit()
-
     #checks if you just got the second to last player, meaning you won
     if player_id is new_target["target_id"]:
         return jsonify({"win": True}), 302
@@ -148,6 +156,11 @@ def got_target():
 @bp.route('/won_game')
 def won_game():
     return jsonify({"win": True})
+@bp.route('/party', methods=['GET', 'POST'])
+def loool():
+    if request.method == 'POST':
+        hello = request.get_json()["yeh"]
+        return hello
 
 @bp.route('/get_game_info',  methods=['POST'])
 def get_game_info():

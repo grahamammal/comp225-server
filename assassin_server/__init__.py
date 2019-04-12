@@ -77,7 +77,8 @@ def internal_error(error_id):
         6: jsonify({'message':'You are not the creator of this game', 'error_id':6}),
         7: jsonify({'message':'You must supply a name for this game', 'error_id':7}),
         8: jsonify({'message':'There are no more available game codes', 'error_id':8}),
-        9: jsonify({'message':'You are not dead or the last player', 'error_id':9})
+        9: jsonify({'message':'You are not dead or the last player', 'error_id':9}),
+        10: jsonify({'message':'Incorrect killcode', 'error_id':10})
     }
 
     return error_dict[error_id]
