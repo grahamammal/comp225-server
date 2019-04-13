@@ -156,11 +156,6 @@ def got_target():
 @bp.route('/won_game')
 def won_game():
     return jsonify({"win": True})
-@bp.route('/party', methods=['GET', 'POST'])
-def loool():
-    if request.method == 'POST':
-        hello = request.get_json()["yeh"]
-        return hello
 
 @bp.route('/get_game_info',  methods=['POST'])
 def get_game_info():
@@ -207,6 +202,28 @@ def request_target():
 
     output=row_to_dict(target)
     return jsonify(output)
+
+# CHANGE the direct access to kill code or make the player id much safer!
+#Returns the player's kill code
+@bp.route('/request_kill_code', methods=['GET'])
+def request_kill_code():
+    if 'this_player_id' not in session:
+        return (internal_error(4), 403)
+
+    player_id=session['this_player_id']
+
+    db = get_db()
+
+    player_kill_code= db.execute(
+        'SELECT player_kill_code FROM players'
+        ' WHERE player_id = ?',
+        (player_id,)
+    ).fetchone()
+   
+    output=row_to_dict(player_kill_code)
+    return jsonify(output)
+
+
 
 @bp.route('/remove_from_game', methods=['GET'])
 def remove_from_game():
