@@ -66,14 +66,18 @@ def add_player():
     )
     db.commit()
 
-    session['this_player_id']=db.execute(
+    player_id=db.execute(
         'SELECT player_id FROM players'
         ' WHERE player_first_name = ? AND player_last_name=? AND game_code = ?',
         (player_first_name, player_last_name, game_code)
     ).fetchone()[0]
 
 
-    return ('', 200)
+    output = {
+        'player_id': player_id
+    }
+
+    return jsonify(output)
 
 # May want to add a way to ensure this is sent from our app
 @bp.route('/got_target', methods=['POST'])
@@ -205,12 +209,13 @@ def request_target():
 
 # CHANGE the direct access to kill code or make the player id much safer!
 #Returns the player's kill code
-@bp.route('/request_kill_code', methods=['GET'])
+@bp.route('/request_kill_code', methods=['POST'])
 def request_kill_code():
-    if 'this_player_id' not in session:
-        return (internal_error(4), 403)
+    player_id = request.get_json()['player_id']
+    #ADD AN IF STATEMENT ABOUT  PUTTING IN THE INCORRECT PLAYERID
 
-    player_id=session['this_player_id']
+    # if 'this_player_id' not in session:
+    #     return (internal_error(4), 403)
 
     db = get_db()
 
