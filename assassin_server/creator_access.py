@@ -66,41 +66,16 @@ def create_game():
 def start_hunt():
     """Starts the hunting phase of the game"""
     content = request.get_json()
+    print(content)
 
     is_creator=content['is_creator']
     game_code=content['game_code']
+    player_id = content ['player_id']
 
     if str(is_creator) != str(1):
         return (internal_error(4), 403)
 
-    
-
-
-    # #makes sure your session has a player associated with it
-    # if 'this_player_id' not in session:
-    #     return (internal_error(4), 403)
-
-    # player_id=session['this_player_id']
-
     db=get_db()
-
-    # creator_status= db.execute(
-    #     'SELECT is_creator FROM players'
-    #     ' WHERE player_id = ?',
-    #     (player_id,)
-    # ).fetchone()
-
-    # #forbidden if the player isn't the creator or if the player doesn't exist
-    # if creator_status is None or creator_status[0] is 0:
-    #     return (internal_error(6), 403)
-
-    # game_code=db.execute(
-    #     'SELECT game_code FROM players'
-    #     ' WHERE player_id = ?',
-    #     (player_id,)
-    # ).fetchone()[0]
-
-
 
     players_with_target=generate_targets(game_code)
     players_with_kill_code= generate_kill_code(game_code)
@@ -138,6 +113,12 @@ def start_hunt():
         )
         db.commit()
 
+    player_kill_code=db.execute(
+        'SELECT player_kill_code FROM players'
+        ' WHERE player_id = ?',
+        (player_id,)
+    ).fetchone()[0]
+
 
 
     #update game_state
@@ -148,8 +129,9 @@ def start_hunt():
         (game_code,)
     )
     db.commit()
-    
-    return ('', 200)
+
+
+    return jsonify( {"player_kill_code": player_kill_code})
 
 @bp.route('/player_list', methods=['GET'])
 def player_list():
