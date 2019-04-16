@@ -161,7 +161,7 @@ def player_list():
     ).fetchall()
 
     output=table_to_dict(player_list)
-    return jsonify(output)
+    return jsonify({"players": output})
 
 
 
