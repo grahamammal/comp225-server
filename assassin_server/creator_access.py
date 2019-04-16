@@ -143,10 +143,10 @@ def player_list():
     content = request.get_json()
     player_id = content['player_id']
 
-    db=get_db()
-    creator_status=get_db(
+    db = get_db()
+    creator_status = db.execute(
         'SELECT is_creator, game_code FROM players'
-        'WHERE player_id=?',
+        ' WHERE player_id = ?',
         (player_id,)
     ).fetchone()
 
