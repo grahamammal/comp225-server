@@ -27,23 +27,26 @@ def test_create_game(client, game_name, game_rules, expected_error_id, expected_
         json_data=response.get_json()
         assert 1000<=json_data['game_code'] and json_data['game_code']<10000
 
-@pytest.mark.parametrize(('num_players', 'is_creator_last', 'expected_error_id', 'expected_status_code'), (
-    (10, True, None, 200),
-    (10, False, 6, 403),
-    (1, True, None, 302),
-    (1, False, 6, 403),
-    (0, True, 4, 403),
-    (0, False, 4, 403),
+@pytest.mark.parametrize(('num_players', 'is_creator', 'player_id', 'expected_error_id', 'expected_status_code'), (
+    (10, True, 17, None, 200),
+    (10, False, 17, 6, 403),
+    (1, True, 8, None, 302),
+    (1, False, 8, 6, 403),
+    (0, True, 8, 4, 403),
+    (0, False, 8, 4, 403),
 ))
-def test_start_hunt(client, num_players, is_creator_last, expected_error_id, expected_status_code):
+def test_start_hunt(client, num_players, is_creator, player_id, expected_error_id, expected_status_code):
 
     for i in range(num_players):
-        if i+1 == num_players and is_creator_last:
+        if i+1 == num_players and is_creator:
             generate_player(client, True)
         else:
             generate_player(client, False)
 
-    response=client.get('/creator_access/start_hunt')
+    response=client.post(
+        '/creator_access/start_hunt',
+        json={'player_id' : player_id}
+    )
 
     assert response.status_code==expected_status_code
     if expected_error_id is not None:

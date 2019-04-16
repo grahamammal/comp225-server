@@ -11,19 +11,18 @@ from assassin_server.db import get_db
         (None, None, 4, 403)
     )
 )
-def test_is_alive(client, app, player_id, expected_is_alive, expected_error_id, expected_status_code):
-    with app.test_client() as c:
-        if player_id is not None:
-            with c.session_transaction() as sess:
-                sess['this_player_id'] = player_id
+def test_is_alive(client, player_id, expected_is_alive, expected_error_id, expected_status_code):
 
-        response = c.get('/status_access/is_alive')
-        assert response.status_code==expected_status_code
+    response = client.post(
+        '/status_access/is_alive',
+        json={'player_id' : player_id}
+    )
+    assert response.status_code==expected_status_code
 
-        if expected_error_id is not None:
-            assert response.get_json()['error_id']==expected_error_id
-        else:
-            assert response.get_json()['is_alive']==expected_is_alive
+    if expected_error_id is not None:
+        assert response.get_json()['error_id']==expected_error_id
+    else:
+        assert response.get_json()['is_alive']==expected_is_alive
 
 
 @pytest.mark.parametrize(

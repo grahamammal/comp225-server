@@ -82,11 +82,12 @@ def add_player():
 # May want to add a way to ensure this is sent from our app
 @bp.route('/got_target', methods=['POST'])
 def got_target():
-    #makes sure your session has a player associated with it
-    if 'this_player_id' not in session:
-        return (internal_error(4), 403)
 
-    player_id=session.get("this_player_id", None)
+    content=request.get_json()
+    player_id=content['player_id']
+    #asking the player to provide their target's kill code
+    guessed_target_kill_code = content['guessed_target_kill_code']
+
 
     db=get_db()
 
@@ -113,9 +114,6 @@ def got_target():
 
     else:
         target_id=target_id[0]
-
-    #asking the player to provide her/his target's kill code
-    guessed_target_kill_code = request.get_json()['guessed_target_kill_code']
 
     #this is the actual target's kill code
     target_kill_code=db.execute(
@@ -180,28 +178,25 @@ def get_game_info():
     return jsonify(output)
 
 #may want to ensure request is sent from app
-@bp.route('/request_target', methods=['GET'])
+@bp.route('/request_target', methods=['POST'])
 def request_target():
     """Requests the target of the player who made the request, using that players session info"""
     #makes sure your session has a player associated with it
-    if 'this_player_id' not in session:
-        return (internal_error(4), 403)
-
-
-    player_id=session['this_player_id']
+    content=request.get_json()
+    player_id=content['player_id']
 
 
 
     db=get_db()
     target= db.execute(
-        'SELECT target_first_name, target_last_name, target_id FROM players'
+        'SELECT target_first_name, target_last_name FROM players'
         ' WHERE player_id = ?',
         (player_id,)
     ).fetchone()
 
 
 
-    if target[0] is None and target[1] is None and target[2] is None:
+    if target[0] is None and target[1] is None:
         return (internal_error(5), 400)
 
     output=row_to_dict(target)
@@ -211,11 +206,9 @@ def request_target():
 #Returns the player's kill code
 @bp.route('/request_kill_code', methods=['POST'])
 def request_kill_code():
-    player_id = request.get_json()['player_id']
-    #ADD AN IF STATEMENT ABOUT  PUTTING IN THE INCORRECT PLAYERID
 
-    # if 'this_player_id' not in session:
-    #     return (internal_error(4), 403)
+    content=request.get_json()
+    player_id=content['player_id']
 
     db = get_db()
 
@@ -224,18 +217,15 @@ def request_kill_code():
         ' WHERE player_id = ?',
         (player_id,)
     ).fetchone()
-   
+
     output=row_to_dict(player_kill_code)
     return jsonify(output)
 
-
-
-@bp.route('/remove_from_game', methods=['GET'])
+@bp.route('/remove_from_game', methods=['POST'])
 def remove_from_game():
-    if 'this_player_id' not in session:
-        return (internal_error(4), 403)
 
-    player_id=session['this_player_id']
+    content=request.get_json()
+    player_id=content['player_id']
 
     db=get_db()
 

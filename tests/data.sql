@@ -1,48 +1,48 @@
 INSERT INTO players (
-                                 player_first_name, player_last_name,
+                      player_kill_code, player_first_name, player_last_name,
                       target_id, target_first_name, target_last_name,
                       is_alive, is_creator, disputed_got,
                       game_code
                     )
 VALUES
   (
-       "test1", "test1",
-    2, "test3", "test3",
-    1, 1, 0,
-    1000
+      1001, "test1", "test1",
+      3, "test3", "test3",
+      1, 1, 0,
+      1000
   ),
   (
-       "test2", "test2",
-    0, "test1", "test1",
-    1, 1, 0,
-    1000
+      1002, "test2", "test2",
+      1, "test1", "test1",
+      1, 1, 0,
+      1000
   ),
   (
-       "test3", "test3",
-    1, "test2", "test2",
-    1, 1, 0,
-    1000
+      1003, "test3", "test3",
+      2, "test2", "test2",
+      1, 1, 0,
+      1000
   ),
   (
-      "test4", "test4",
-    null, null, null,
-    1, 1, 0,
-    1001
+      null, "test4", "test4",
+      null, null, null,
+      1, 1, 0,
+      1001
   ),
   (
-      "test5", "test5",
-      5, "test6", "test6",
+      1005, "test5", "test5",
+      6, "test6", "test6",
       1, 1, 0,
       1002
   ),
   (
-      "test6", "test6",
-      4, "test5", "test5",
+      1006, "test6", "test6",
+      5, "test5", "test5",
       1, 0, 0,
       1002
   ),
   (
-      "test7", "test7",
+      null, "test7", "test7",
       null, null, null,
       0, 0, 0,
       1001

@@ -66,16 +66,27 @@ def create_game():
 def start_hunt():
     """Starts the hunting phase of the game"""
     content = request.get_json()
-    print(content)
-
-    is_creator=content['is_creator']
-    game_code=content['game_code']
     player_id = content ['player_id']
 
-    if str(is_creator) != str(1):
+    db=get_db()
+
+    is_creator=db.execute(
+        'SELECT is_creator FROM players'
+        ' WHERE player_id = ?',
+        (player_id, )
+    ).fetchone()
+
+    if is_creator is None:
         return (internal_error(4), 403)
 
-    db=get_db()
+    if is_creator[0] == 0:
+        return (internal_error(6), 403)
+
+    game_code=db.execute(
+        'SELECT game_code FROM players'
+        ' WHERE player_id = ?',
+        (player_id, )
+    ).fetchone()[0]
 
     players_with_target=generate_targets(game_code)
     players_with_kill_code= generate_kill_code(game_code)
@@ -94,7 +105,7 @@ def start_hunt():
         player_id=player["player_id"]
         db.execute(
             'UPDATE players'
-            ' SET target_first_name = ?, target_last_name = ?, target_id = ?' 
+            ' SET target_first_name = ?, target_last_name = ?, target_id = ?'
             ' WHERE player_id =?',
             (target_first_name, target_last_name, target_id,
             player_id)
@@ -106,19 +117,12 @@ def start_hunt():
         player_kill_code = player["player_kill_code"]
         db.execute(
             'UPDATE players'
-            ' SET player_kill_code = ?' 
+            ' SET player_kill_code = ?'
             ' WHERE player_id =?',
             (player_kill_code,
             player_id)
         )
         db.commit()
-
-    player_kill_code=db.execute(
-        'SELECT player_kill_code FROM players'
-        ' WHERE player_id = ?',
-        (player_id,)
-    ).fetchone()[0]
-
 
 
     #update game_state
@@ -131,14 +135,13 @@ def start_hunt():
     db.commit()
 
 
-    return jsonify( {"player_kill_code": player_kill_code})
+    return '', 200
 
-@bp.route('/player_list', methods=['GET'])
+@bp.route('/player_list', methods=['POST'])
 def player_list():
-    if 'this_player_id' not in session:
-        return (internal_error(4), 403)
 
-    player_id=session['this_player_id']
+    content = request.get_json()
+    player_id = content['player_id']
 
     db=get_db()
     creator_status=get_db(
@@ -165,7 +168,7 @@ def player_list():
 def generate_kill_code(game_code):
     db = get_db()
 
-    used = False 
+    used = False
     min_kill_code = 1000
     max_kill_code = 9999
 
@@ -179,17 +182,17 @@ def generate_kill_code(game_code):
     )
 
     n = len(players_without_kill_code)
-    first_person_wtout_kill_code_in_list = 0 
+    first_person_wtout_kill_code_in_list = 0
     for i in range(0, n-1):
         players_with_kill_code.append(
-            players_without_kill_code.pop(first_person_wtout_kill_code_in_list) 
+            players_without_kill_code.pop(first_person_wtout_kill_code_in_list)
             )
         players_with_kill_code[i]["player_kill_code"]= random.randint(min_kill_code, max_kill_code)
     players_with_kill_code.append(players_without_kill_code.pop(0))
-    players_with_kill_code[n-1]["player_kill_code"]= random.randint(min_kill_code, max_kill_code) 
- 
+    players_with_kill_code[n-1]["player_kill_code"]= random.randint(min_kill_code, max_kill_code)
+
     return players_with_kill_code
-    
+
 
 #gives each player a target that fits the rules of the game
 def generate_targets(game_code):
