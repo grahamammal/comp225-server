@@ -9,13 +9,11 @@ from assassin_server.__init__ import internal_error
 
 bp = Blueprint('status_access', __name__, url_prefix='/status_access')
 
-@bp.route('/is_alive')
+@bp.route('/is_alive', methods = ['POST'])
 def is_alive():
 
-    if 'this_player_id' not in session:
-        return (internal_error(4), 403)
-
-    player_id=session['this_player_id']
+    content=request.get_json()
+    player_id=content['player_id']
 
     db=get_db()
     is_alive=db.execute(

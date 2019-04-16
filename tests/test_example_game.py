@@ -39,12 +39,13 @@ def test_mock_game(client, app):
             ('Analeidi', 'Barrera', game_code)
         ).fetchone()[0]
 
-    with app.test_client() as c:
-        with c.session_transaction() as sess:
-            sess['this_player_id'] = creator_id
 
-        response = c.get('/creator_access/start_hunt')
-        assert response.status_code == 200
+    response = client.post(
+        '/creator_access/start_hunt',
+        json={'player_id':creator_id}
+    )
+
+    assert response.status_code == 200
 
     #make sure game_state changed
     with app.app_context():
@@ -71,38 +72,56 @@ def test_mock_game(client, app):
 
     # Start getting players
     # First we'll let Analeidi get her target
-    next_getter = got_target_new_target(app, creator_id)
+    next_getter = got_target_new_target(app, client, creator_id)
 
     #Then we'll let Analeidi's new target get their target
-    next_getter = got_target_new_target(app, next_getter)
+    next_getter = got_target_new_target(app, client, next_getter)
 
     #make sure the target of Analeidi's target is Analeidi
     assert next_getter == creator_id
 
-    #find out who Analeidi's last target is:
-    last_target_id=None
-    with app.test_client() as c:
-        with c.session_transaction() as sess:
-            sess['this_player_id']=creator_id
+    #find Analeidi's last target
+    last_target_info=None
+    with app.app_context():
+        last_target_info = get_db().execute(
+            'SELECT target_first_name, target_last_name, target_id FROM players'
+            ' WHERE player_id = ?',
+            (creator_id,)
+        ).fetchone()
 
-        response=c.get('/player_access/request_target')
-        last_target_id=response.get_json()['target_id']
+    response = client.post(
+        '/player_access/request_target',
+        json={'player_id':creator_id}
+    )
+    assert response.status_code == 200
+    assert response.get_json()['target_first_name'] == last_target_info[0]
+    assert response.get_json()['target_last_name'] == last_target_info[1]
+
+    last_target_id = last_target_info[2]
 
     # We'll let Analeidi win the game
-    with app.test_client() as c:
-        with c.session_transaction() as sess:
-            sess['this_player_id']=creator_id
+    last_target_kill_code=None
+    with app.app_context():
+        last_target_kill_code=get_db().execute(
+            'SELECT player_kill_code FROM players'
+            ' WHERE player_id = ?',
+            (last_target_id, )
+        ).fetchone()[0]
 
-        response = c.get('/player_access/got_target')
-        assert response.status_code == 302
+    response = client.post(
+        '/player_access/got_target',
+        json={'player_id':creator_id,
+              'guessed_target_kill_code':last_target_kill_code}
+    )
+
+    assert response.status_code == 302
 
     #Remove Analeidi's last target
-    with app.test_client() as c:
-        with c.session_transaction() as sess:
-            sess['this_player_id']=last_target_id
-
-        response=c.get('/player_access/remove_from_game')
-        assert response.status_code == 200
+    response=client.post(
+        '/player_access/remove_from_game',
+        json={'player_id':last_target_id}
+    )
+    assert response.status_code == 200
 
     #Make sure they're removed
     with app.app_context():
@@ -113,12 +132,11 @@ def test_mock_game(client, app):
         ).fetchone() is None
 
     #Now Analeidi tells the game to remove her
-    with app.test_client() as c:
-        with c.session_transaction() as sess:
-            sess['this_player_id']=creator_id
-
-        response=c.get('/player_access/remove_from_game')
-        assert response.status_code == 200
+    response=client.post(
+        '/player_access/remove_from_game',
+        json={'player_id':creator_id}
+    )
+    assert response.status_code == 200
 
     #Make sure both she and the game are deleted
     with app.app_context():
@@ -135,33 +153,35 @@ def test_mock_game(client, app):
         ).fetchone() is None
 
 # Get's the target of a player and returns their new target's id
-def got_target_new_target(app, getter_id):
+def got_target_new_target(app, client, getter_id):
 
-    target_id=None
+    target_id = None
+    target_kill_code = None
     with app.app_context():
-        target_id=get_db().execute(
+        target_id = get_db().execute(
             'SELECT target_id FROM players'
             ' WHERE player_id = ?',
             (getter_id,)
         ).fetchone()[0]
+        target_kill_code = get_db().execute(
+            'SELECT player_kill_code FROM players'
+            ' WHERE player_id = ?',
+            (target_id,)
+        ).fetchone()[0]
 
-    new_target_id=None
-    with app.test_client() as c:
-        with c.session_transaction() as sess:
-            sess['this_player_id'] = getter_id
+    #get your target
+    response = client.post(
+        '/player_access/got_target',
+        json={'player_id':getter_id,
+              'guessed_target_kill_code':target_kill_code}
+    )
+    assert response.status_code == 200
 
-        response = c.get('/player_access/got_target')
-        assert response.status_code == 200
-        response = c.get('/player_access/request_target')
-        assert response.status_code == 200
-        new_target_id = response.get_json()['target_id']
-
-    with app.test_client() as c:
-        with c.session_transaction() as sess:
-            sess['this_player_id']=target_id
-
-        response=c.get('/player_access/remove_from_game')
-        assert response.status_code == 200
+    response=client.post(
+        '/player_access/remove_from_game',
+        json={'player_id':target_id}
+    )
+    assert response.status_code == 200
 
     with app.app_context():
         assert get_db().execute(
@@ -170,11 +190,29 @@ def got_target_new_target(app, getter_id):
             (target_id, )
         ).fetchone() is None
 
+    #find your new target
+    new_target_info=None
+    with app.app_context():
+        new_target_info = get_db().execute(
+            'SELECT target_first_name, target_last_name, target_id FROM players'
+            ' WHERE player_id = ?',
+            (getter_id,)
+        ).fetchone()
+
+    response = client.post(
+        '/player_access/request_target',
+        json={'player_id':getter_id}
+    )
+    assert response.status_code == 200
+    assert response.get_json()['target_first_name'] == new_target_info[0]
+    assert response.get_json()['target_last_name'] == new_target_info[1]
+
+    new_target_id = new_target_info[2]
+
     return new_target_id
 
 def add_player_assertions(client, app, player_first_name, player_last_name,is_creator, game_code):
     #get the target info so we can let them remove themselves from the game
-
 
     response= client.post(
         '/player_access/add_player',
@@ -185,8 +223,6 @@ def add_player_assertions(client, app, player_first_name, player_last_name,is_cr
             'game_code':game_code
         }
     )
-
-
 
     assert response.status_code  == 200
     with app.app_context():

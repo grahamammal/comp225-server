@@ -34,28 +34,28 @@ def test_add_player(client,
         assert response.get_json()['error_id']==expected_error_id
 
 @pytest.mark.parametrize(
-    ('this_player_id','expected_error_id','expected_status_code'),
+    ('this_player_id','expected_error_id','expected_status_code', 'guessed_target_kill_code'),
     (
-        (None, 4, 403), # no such player
-        (4, 5, 400), # player has no target
-        (5, None, 302), # player wins
-        (1, None, 200), # player got target but didn't win
+        (4, 5, 400, None), # player has no target
+        (5, None, 302, 1006), # player wins
+        (1, None, 200, 1003), # player got target but didn't win
     )
 )
-def test_got_target(app, this_player_id, expected_error_id, expected_status_code):
+def test_got_target(client, this_player_id, expected_error_id, expected_status_code, guessed_target_kill_code):
 
-    with app.test_client() as c:
-        if this_player_id is not None:
-            with c.session_transaction() as sess:
-                sess['this_player_id'] = this_player_id
+        response = client.post(
+            '/player_access/got_target',
+            json={'player_id' : this_player_id,
+                  'guessed_target_kill_code' : guessed_target_kill_code}
+        )
 
-        response = c.get('/player_access/got_target')
         assert response.status_code==expected_status_code
         if expected_error_id is not None:
             assert response.get_json()['error_id']==expected_error_id
 
 def test_won_game(client):
     response=client.get('/player_access/won_game')
+    assert response.status_code==200
 
 @pytest.mark.parametrize(
     ('game_code', 'expected_rules', 'expected_name', 'expected_status_code'),
@@ -81,21 +81,22 @@ def test_get_game_info(client, game_code, expected_rules, expected_name, expecte
 @pytest.mark.parametrize(
     ('this_player_id','expected_error_id', 'expected_status_code'),
     (
-        (None, 4, 403),
         (4, 5, 400),
         (1, None, 200)
     )
 )
-def test_request_target(app, this_player_id, expected_error_id,expected_status_code):
-    with app.test_client() as c:
-        if this_player_id is not None:
-            with c.session_transaction() as sess:
-                sess['this_player_id']=this_player_id
-        response=c.get('/player_access/request_target')
+def test_request_target(app, client, this_player_id, expected_error_id, expected_status_code):
+
+        response=client.post(
+            '/player_access/request_target',
+            json={'player_id':this_player_id}
+        )
+
 
         assert response.status_code == expected_status_code
         if expected_error_id is not None:
             print(response)
             assert response.get_json()['error_id']==expected_error_id
         else:
-            assert response.get_json()['target_id']==2
+            assert response.get_json()['target_first_name'] == 'test3'
+            assert response.get_json()['target_last_name'] == 'test3'
