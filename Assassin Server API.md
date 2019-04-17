@@ -1,73 +1,82 @@
-
+﻿
 # Assassin Server API Docs
 _Analeidi Barrera,_
 _Ellen Graham,_
 _Corey Pieper,_
 _Jacob Weightman_
 
-# Table Of Contents
-- [Player Requests](#player-requests)
-  * [Get Game Info](#get-game-info)
-    + [HTTP Request](#http-request)
-    + [URL Parameters](#url-parameters)
-    + [Return Value](#return-value)
-  * [Got Target](#got-target)
-    + [HTTP Request](#http-request-1)
-    + [URL Parameters](#url-parameters-1)
-    + [Return Value](#return-value-1)
-  * [Won Game](#won-game)
-    + [HTTP Request](#http-request-2)
-    + [URL Parameters](#url-parameters-2)
-    + [Return Value](#return-value-2)
-  * [Add Player](#add-player)
-    + [HTTP Request](#http-request-3)
-    + [URL Parameters](#url-parameters-3)
-    + [Return Value](#return-value-3)
-  * [Request Target](#request-target)
-    + [HTTP Request](#http-request-4)
-    + [URL Parameters](#url-parameters-4)
-    + [Return Value](#return-value-4)
-- [Game Creator Requests](#game-creator-requests)
-  * [Create Game](#create-game)
-    + [HTTP Request](#http-request-5)
-    + [URL Parameters](#url-parameters-5)
-    + [Return Value](#return-value-5)
-  * [Start Hunt](#start-hunt)
-    + [HTTP Request](#http-request-6)
-    + [URL Parameters](#url-parameters-6)
+- [Assassin Server API Docs](#assassin-server-api-docs)
+  * [Player Requests](#player-requests)
+    + [Get Game Info](#get-game-info)
+      - [HTTP Request](#http-request)
+      - [URL Parameters](#url-parameters)
+      - [Return Value](#return-value)
+    + [Got Target](#got-target)
+      - [HTTP Request](#http-request-1)
+      - [URL Parameters](#url-parameters-1)
+      - [Return Value](#return-value-1)
+    + [Won Game](#won-game)
+      - [HTTP Request](#http-request-2)
+      - [URL Parameters](#url-parameters-2)
+      - [Return Value](#return-value-2)
+    + [Add Player](#add-player)
+      - [HTTP Request](#http-request-3)
+      - [URL Parameters](#url-parameters-3)
+      - [Return Value](#return-value-3)
+    + [Request Target](#request-target)
+      - [HTTP Request](#http-request-4)
+      - [URL Parameters](#url-parameters-4)
+      - [Return Value](#return-value-4)
+    + [Request Kill Code](#request-kill-code)
+      - [HTTP Request](#http-request-5)
+      - [URL Parameters](#url-parameters-5)
+      - [Return Value](#return-value-5)
+    + [Remove From Game](#remove-from-game)
+      - [HTTP Request](#http-request-6)
+      - [URL Parameters](#url-parameters-6)
       - [Return Value](#return-value-6)
-- [Status Requests](#status-requests)
-  * [Is Alive](#is-alive)
-    + [HTTP Request](#http-request-7)
-    + [URL Parameters](#url-parameters-7)
-    + [Return Value](#return-value-7)
-  * [Is Game Started](#is-game-started)
-    + [HTTP Request](#http-request-8)
-    + [URL Parameters](#url-parameters-8)
-    + [Return Value](#return-value-8)
-- [Debug Requests](#debug-requests)
-  * [Get Player](#get-player)
-    + [HTTP Request](#http-request-9)
-    + [URL Parameters](#url-parameters-9)
-    + [Return Value](#return-value-9)
-  * [Get All Players](#get-all-players)
-    + [HTTP Request](#http-request-10)
-    + [URL Parameters](#url-parameters-10)
-    + [Return Value](#return-value-10)
-  * [Get Game](#get-game)
-    + [HTTP Request](#http-request-11)
-    + [URL Parameters](#url-parameters-11)
-    + [Return Value](#return-value-11)
-  * [Get All Games](#get-all-games)
-    + [HTTP Request](#http-request-12)
-    + [URL Parameters](#url-parameters-12)
-    + [Return Value](#return-value-12)
-- [Errors](#errors)
+  * [Game Creator Requests](#game-creator-requests)
+    + [Create Game](#create-game)
+      - [HTTP Request](#http-request-7)
+      - [URL Parameters](#url-parameters-7)
+      - [Return Value](#return-value-7)
+    + [Start Hunt](#start-hunt)
+      - [HTTP Request](#http-request-8)
+      - [URL Parameters](#url-parameters-8)
+        * [Return Value](#return-value-8)
+    + [Player List](#player-list)
+      - [HTTP Request](#http-request-9)
+      - [URL Parameters](#url-parameters-9)
+        * [Return Value](#return-value-9)
+  * [Status Requests](#status-requests)
+    + [Is Alive](#is-alive)
+      - [HTTP Request](#http-request-10)
+      - [URL Parameters](#url-parameters-10)
+      - [Return Value](#return-value-10)
+    + [Is Game Started](#is-game-started)
+      - [HTTP Request](#http-request-11)
+      - [URL Parameters](#url-parameters-11)
+      - [Return Value](#return-value-11)
+  * [Debug Requests](#debug-requests)
+    + [Get Player](#get-player)
+      - [HTTP Request](#http-request-12)
+      - [URL Parameters](#url-parameters-12)
+      - [Return Value](#return-value-12)
+    + [Get All Players](#get-all-players)
+      - [HTTP Request](#http-request-13)
+      - [URL Parameters](#url-parameters-13)
+      - [Return Value](#return-value-13)
+    + [Get Game](#get-game)
+      - [HTTP Request](#http-request-14)
+      - [URL Parameters](#url-parameters-14)
+      - [Return Value](#return-value-14)
+    + [Get All Games](#get-all-games)
+      - [HTTP Request](#http-request-15)
+      - [URL Parameters](#url-parameters-15)
+      - [Return Value](#return-value-15)
+  * [Errors](#errors)
 
-
-
-
-
+<small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
 
 
 ## Player Requests
@@ -106,14 +115,22 @@ This endpoint remove your target from the game and provide you with a new one. I
 #### HTTP Request
 ---
 ```
-GET http://<localhost>/player_access/got_target
+POST http://<localhost>/player_access/got_target
+    {
+        "player_id" = 1
+        "guessed_target_kill_code" = 1234
+    }
 ```
 
 #### URL Parameters
 ---
-None
+| Parameter | Default | Description
+| ------ | ------ | ------|
+| player\_id | None | Your player ID |
+| guessed\_target\_kill\_code | None | The kill code of the player you got |
+
 #### Return Value
-Status Code 302 if you won the game.
+Status Code 302 if you won the game, 200 otherwise.
 
 ### Won Game
 
@@ -164,7 +181,11 @@ POST http://<localhost>/player_access/add_player
 
 #### Return Value
 ---
-None
+```
+{
+    "player_id" : 1
+}
+```
 
 ### Request Target
 
@@ -173,12 +194,17 @@ This endpoint will request the target of the player who navigated here.
 #### HTTP Request
 ---
 ```
-GET http://<localhost>/player_access/request_target
+POST http://<localhost>/player_access/request_target
+    {
+        "player_id" : 1
+    }
 ```
 
 #### URL Parameters
 ---
-None
+| Parameter | Default | Description
+| ------ | ------ | ------|
+| player\_id | None | Your player ID |
 
 #### Return Value
 ---
@@ -187,9 +213,60 @@ None
 {
     "target_first_name":"example"
     "target_last_name":"example"
-    "target_id": 0
 }
 ```
+
+### Request Kill Code 
+
+This endpoint will return your kill code.
+
+#### HTTP Request
+---
+```
+POST http://<localhost>/player_access/request_kill_code
+    {
+        "player_id" : 1
+    }
+```
+
+#### URL Parameters
+---
+| Parameter | Default | Description
+| ------ | ------ | ------|
+| player\_id | None | Your player ID |
+
+#### Return Value
+---
+
+```
+{
+    "player_kill_code" : 1234
+}
+```
+
+### Remove From Game
+
+Remove yourself from the game after you've died.
+
+#### HTTP Request
+---
+```
+POST http://<localhost>/player_access/remove_from_game
+    {
+        "player_id" = 1
+    }
+```
+
+#### URL Parameters
+---
+| Parameter | Default | Description
+| ------ | ------ | ------|
+| player\_id | None | Your player ID |
+
+#### Return Value
+---
+
+None
 
 ## Game Creator Requests
 ### Create Game
@@ -229,15 +306,55 @@ This endpoint will start hunting phase of the game of the game creator. This req
 #### HTTP Request
 ---
 ```
-GET http://<localhost>/creator_access/start_hunt
+POST http://<localhost>/creator_access/start_hunt
+    {
+        "player_id" : 1
+    }
 ```
 
 #### URL Parameters
 ---
-None
+| Parameter | Default | Description
+| ------ | ------ | ------|
+| player\_id | None | Your player ID |
+
 ##### Return Value
 ---
 None
+
+### Player List
+
+This endpoint will return a list of the names of the players in the game.
+
+#### HTTP Request
+---
+```
+POST http://<localhost>/creator_access/player_list
+    {
+        "player_id" : 1
+    }
+```
+
+#### URL Parameters
+---
+| Parameter | Default | Description
+| ------ | ------ | ------|
+| player\_id | None | Your player ID |
+
+##### Return Value
+---
+```
+[
+    {
+        "player_first_name": "test1"
+        "player_last_name": "test1"
+    },
+    {
+        "player_first_name": "test2"
+        "player_last_name": "test2"
+    }
+]
+```
 
 ## Status Requests
 
@@ -248,12 +365,17 @@ This endpoint will tell the player asking if they are alive or not
 #### HTTP Request
 ---
 ```
-GET http://<localhost>/status_access/is_alive
+POST http://<localhost>/status_access/is_alive
+    {
+        "player_id" : 1
+    }
 ```
 
 #### URL Parameters
 ---
-None
+| Parameter | Default | Description
+| ------ | ------ | ------|
+| player\_id | None | Your player ID |
 
 #### Return Value
 ---
