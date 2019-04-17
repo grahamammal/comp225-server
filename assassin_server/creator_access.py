@@ -100,9 +100,7 @@ def start_hunt():
 
 
     players_with_target=generate_targets(game_code)
-    players_with_kill_code= generate_kill_code(game_code)
-
-
+   
     #give players targets
     for player in players_with_target:
         #not sure why I need to do this but it didn't work when I placed the dictionary access in the sql query
@@ -121,19 +119,7 @@ def start_hunt():
         )
         db.commit()
 
-    for player in players_with_kill_code:
-        player_id = player["player_id"]
-        player_kill_code = player["player_kill_code"]
-        db.execute(
-            'UPDATE players'
-            ' SET player_kill_code = ?'
-            ' WHERE player_id =?',
-            (player_kill_code,
-            player_id)
-        )
-        db.commit()
-
-
+    
     #update game_state
     db.execute(
         'UPDATE games'
@@ -176,33 +162,6 @@ def player_list():
     return jsonify({"players": output})
 
 
-def generate_kill_code(game_code):
-    db = get_db()
-
-    used = False
-    min_kill_code = 1000
-    max_kill_code = 9999
-
-    players_with_kill_code = []
-    players_without_kill_code = table_to_dict(
-        db.execute(
-            'SELECT player_id FROM players'
-            ' WHERE game_code = ?',
-            (game_code,)
-        ).fetchall()
-    )
-
-    n = len(players_without_kill_code)
-    first_person_wtout_kill_code_in_list = 0
-    for i in range(0, n-1):
-        players_with_kill_code.append(
-            players_without_kill_code.pop(first_person_wtout_kill_code_in_list)
-            )
-        players_with_kill_code[i]["player_kill_code"]= random.randint(min_kill_code, max_kill_code)
-    players_with_kill_code.append(players_without_kill_code.pop(0))
-    players_with_kill_code[n-1]["player_kill_code"]= random.randint(min_kill_code, max_kill_code)
-
-    return players_with_kill_code
 
 
 #gives each player a target that fits the rules of the game

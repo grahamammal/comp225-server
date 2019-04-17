@@ -58,13 +58,20 @@ def add_player():
 
     #adds player to database if nothing went wrong
 
+    used = False
+    min_kill_code = 1000
+    max_kill_code = 9999
+
+    player_kill_code= random.randint(min_kill_code, max_kill_code)
+
     db.execute(
         'INSERT INTO players'
-        ' (player_first_name, player_last_name,is_creator, game_code, is_alive, disputed_Got)'
-        ' VALUES (?, ?, ?, ?, 1, 0)',
-        (player_first_name, player_last_name, is_creator, game_code)
+        ' (player_first_name, player_last_name,is_creator, game_code, is_alive, disputed_Got, player_kill_code)'
+        ' VALUES (?, ?, ?, ?, 1, 0, ?)',
+        (player_first_name, player_last_name, is_creator, game_code, player_kill_code)
     )
     db.commit()
+
 
     player_id=db.execute(
         'SELECT player_id FROM players'
@@ -74,7 +81,8 @@ def add_player():
 
 
     output = {
-        'player_id': player_id
+        'player_id': player_id,
+        'player_kill_code': player_kill_code
     }
 
     return jsonify(output)
