@@ -1,4 +1,5 @@
 ﻿
+
 # Assassin Server API Docs
 _Analeidi Barrera,_
 _Ellen Graham,_
@@ -184,6 +185,7 @@ POST http://<localhost>/player_access/add_player
 ```
 {
     "player_id" : 1
+    "player_kill_code" : 1234
 }
 ```
 
@@ -555,3 +557,4 @@ The assassin-server API uses the following error codes:
 | 400 | Bad Request -- Your request was bad, maybe there is no such player or game, a player with that name already exists, etc. Check the server code to find out why. |
 | 403 | Forbidden -- You don't have the privileges to make that request |
 | 500 | Internal Server Error -- Something went wrong with the server! Oh no!!
+
