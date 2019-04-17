@@ -153,28 +153,27 @@ def player_list():
     player_id = content['player_id']
 
     db = get_db()
-    creator_status = db.execute(
+    creator_info = db.execute(
         'SELECT is_creator, game_code FROM players'
         ' WHERE player_id = ?',
         (player_id,)
     ).fetchone()
 
-    if creator_status is None:
+    if creator_info is None:
         return (internal_error(4), 403)
 
 
-    if creator_status[0] == 0:
+    if creator_info[0] == 0:
         return (internal_error(6), 403)
 
     player_list=db.execute(
         'SELECT player_first_name, player_last_name FROM players'
         ' WHERE game_code = ?',
-        (creator_status[1],)
+        (creator_info[1],)
     ).fetchall()
 
     output=table_to_dict(player_list)
     return jsonify({"players": output})
-
 
 
 def generate_kill_code(game_code):
