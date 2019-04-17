@@ -103,13 +103,6 @@ def test_player_list(app, client, this_player_id, expected_length, expected_erro
         json={'player_id' : this_player_id}
     )
 
-    # with app.app_context():
-    #     assert get_db().execute(
-    #         'SELECT is_creator, game_code FROM players'
-    #         ' WHERE player_id = ?',
-    #         (this_player_id,)
-    #     ).fetchone()[0] == 5
-
     assert response.status_code == expected_status_code
 
     if expected_error_id is None:
