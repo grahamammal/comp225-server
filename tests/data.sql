@@ -14,13 +14,13 @@ VALUES
   (
       1002, "test2", "test2",
       1, "test1", "test1",
-      1, 1, 0,
+      1, 0, 0,
       1000
   ),
   (
       1003, "test3", "test3",
       2, "test2", "test2",
-      1, 1, 0,
+      1,01, 0,
       1000
   ),
   (
@@ -46,6 +46,12 @@ VALUES
       null, null, null,
       0, 0, 0,
       1001
+  ),
+  (
+      1008, "test8", "test8",
+      8, "test8", "test8",
+      1, 1, 0,
+      1003
   );
 
 
@@ -54,4 +60,5 @@ VALUES
   ("test_game", "no rules dweeb", 1000, 1),
   ("player_access_test_game", null, 1001, 0),
   ("player_access_test_got", "nope", 1002, 1),
+  ("player_access_test_remove", "nope", 1003, 1),
   ("another_test_game", "still no rules dweeb", 9999, 0);

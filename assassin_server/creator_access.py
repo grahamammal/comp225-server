@@ -76,23 +76,32 @@ def start_hunt():
         (player_id, )
     ).fetchone()
 
+    # checks the accessor exists
     if is_creator is None:
         return (internal_error(4), 403)
 
+    # checks the accessor is the creator
     if is_creator[0] == 0:
         return (internal_error(6), 403)
 
+    # grabs the game code
     game_code=db.execute(
         'SELECT game_code FROM players'
         ' WHERE player_id = ?',
         (player_id, )
     ).fetchone()[0]
 
+    #checks if the player is the only player
+    if len(db.execute(
+            'SELECT * FROM players'
+            ' WHERE game_code = ?',
+            (game_code, )).fetchall())<2:
+        return redirect(url_for('player_access.won_game'))
+
+
     players_with_target=generate_targets(game_code)
     players_with_kill_code= generate_kill_code(game_code)
 
-    if len(players_with_target)<2:
-        return redirect(url_for('player_access.won_game'))
 
     #give players targets
     for player in players_with_target:
@@ -150,9 +159,12 @@ def player_list():
         (player_id,)
     ).fetchone()
 
-    if creator_status is None or creator_status[0]==0:
-        return (internal_error(6), 403)
+    if creator_status is None:
+        return (internal_error(4), 403)
 
+
+    if creator_status[0] == 0:
+        return (internal_error(6), 403)
 
     player_list=db.execute(
         'SELECT player_first_name, player_last_name FROM players'
@@ -208,36 +220,29 @@ def generate_targets(game_code):
         ).fetchall()
     )
 
-    #checks if there is only one player
-    if len(players_without_target)==0:
-        players_with_target[i]["target_first_name"]=players_without_target[0]["player_first_name"]
-        players_with_target[i]["target_last_name"]=players_without_target[0]["player_last_name"]
-        players_with_target[i]["target_id"]=players_without_target[0]["player_id"]
-    else:
-
-        #give a target to the n-1 players
-        n=len(players_without_target)
-        last_assigned_target_index=0
-        for i in range(0, n-1):
-            players_with_target.append(
-                players_without_target.pop(last_assigned_target_index)
-            )
-
-            last_assigned_target_index=random.randint(0, len(players_without_target)-1)
-
-
-            players_with_target[i]["target_first_name"]=players_without_target[last_assigned_target_index]["player_first_name"]
-            players_with_target[i]["target_last_name"]=players_without_target[last_assigned_target_index]["player_last_name"]
-            players_with_target[i]["target_id"]=players_without_target[last_assigned_target_index]["player_id"]
-
-        #give a target to the last player
+    #give a target to the n-1 players
+    n=len(players_without_target)
+    last_assigned_target_index=0
+    for i in range(0, n-1):
         players_with_target.append(
-            players_without_target.pop(0)
+            players_without_target.pop(last_assigned_target_index)
         )
 
-        players_with_target[n-1]["target_first_name"]=players_with_target[0]["player_first_name"]
-        players_with_target[n-1]["target_last_name"]=players_with_target[0]["player_last_name"]
-        players_with_target[n-1]["target_id"]=players_with_target[0]["player_id"]
+        last_assigned_target_index=random.randint(0, len(players_without_target)-1)
+
+
+        players_with_target[i]["target_first_name"]=players_without_target[last_assigned_target_index]["player_first_name"]
+        players_with_target[i]["target_last_name"]=players_without_target[last_assigned_target_index]["player_last_name"]
+        players_with_target[i]["target_id"]=players_without_target[last_assigned_target_index]["player_id"]
+
+    #give a target to the last player
+    players_with_target.append(
+        players_without_target.pop(0)
+    )
+
+    players_with_target[n-1]["target_first_name"]=players_with_target[0]["player_first_name"]
+    players_with_target[n-1]["target_last_name"]=players_with_target[0]["player_last_name"]
+    players_with_target[n-1]["target_id"]=players_with_target[0]["player_id"]
 
 
     return players_with_target

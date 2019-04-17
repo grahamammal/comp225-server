@@ -218,6 +218,12 @@ def request_kill_code():
         (player_id,)
     ).fetchone()
 
+    if player_kill_code is None:
+        return (internal_error(4), 403)
+
+    if player_kill_code[0] is None:
+        return (internal_error(11), 400)
+
     output=row_to_dict(player_kill_code)
     return jsonify(output)
 
@@ -241,7 +247,7 @@ def remove_from_game():
 
     all_players=db.execute(
         'SELECT * FROM players'
-        ' WHERE game_code = ? AND player_id != ?',
+        ' WHERE game_code = ? AND player_id != ? AND is_alive == 1',
         (game_code[0], player_id)
     ).fetchone()
 

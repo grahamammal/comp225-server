@@ -6,15 +6,15 @@ from flask import session
 from assassin_server.db import get_db
 
 
-@pytest.mark.parametrize(('game_name', 'game_rules', 'expected_error_id', 'expected_status_code'), (
-    (None, 'rules', 7, 400),
-    ('name', None, None, 200),
-    ('name', 'rules', None, 200),
-))
+@pytest.mark.parametrize(
+    ('game_name', 'game_rules', 'expected_error_id', 'expected_status_code'),
+    (
+        (None, 'rules', 7, 400), # there is no game name
+        ('name', None, None, 200), # there are no game rules
+        ('name', 'rules', None, 200), #there are both rules and a name
+    )
+)
 def test_create_game(client, game_name, game_rules, expected_error_id, expected_status_code):
-
-
-
     response = client.post(
         '/creator_access/create_game',
         json={'game_name': game_name, 'game_rules': game_rules}
@@ -27,14 +27,17 @@ def test_create_game(client, game_name, game_rules, expected_error_id, expected_
         json_data=response.get_json()
         assert 1000<=json_data['game_code'] and json_data['game_code']<10000
 
-@pytest.mark.parametrize(('num_players', 'is_creator', 'player_id', 'expected_error_id', 'expected_status_code'), (
-    (10, True, 17, None, 200),
-    (10, False, 17, 6, 403),
-    (1, True, 8, None, 302),
-    (1, False, 8, 6, 403),
-    (0, True, 8, 4, 403),
-    (0, False, 8, 4, 403),
-))
+@pytest.mark.parametrize(
+    ('num_players', 'is_creator', 'player_id', 'expected_error_id', 'expected_status_code'),
+    (
+        (10, True, 18, None, 200), # the creator tries to start a 10 person hunt
+        (10, False, 18, 6, 403), # a player other than the creator tries to start a 10 person hunt
+        (1, True, 9, None, 302), # the creator tries to start a 1 person hunt
+        (1, False, 9, 6, 403), # a player other than the creator tries to start a 1 person hunt
+        (0, True, 100, 4, 403), # a creator that doesn't exist tries to start a hunt
+        (0, False, 100, 4, 403), # a player that doesn't exist tries to start a hunt
+    )
+)
 def test_start_hunt(client, num_players, is_creator, player_id, expected_error_id, expected_status_code):
 
     for i in range(num_players):
@@ -67,7 +70,7 @@ def generate_player(client, is_creator):
 def test_max_games(client, app):
     with app.app_context():
         db=get_db()
-        for i in range(1003, 9999):
+        for i in range(1004, 9999):
             db.execute(
                 'INSERT INTO games (game_name, game_rules, game_code, game_state)'
                 ' VALUES (?, ?, ?, ?)',
@@ -83,3 +86,33 @@ def test_max_games(client, app):
 
     assert response.status_code==500
     assert response.get_json()['error_id']==8
+
+
+@pytest.mark.parametrize(
+    ('this_player_id', 'expected_length', 'expected_error_id', 'expected_status_code'),
+    (
+        (8, 1, None, 200), # there is only 1 player in the game
+        (1, 3, None, 200), # there are 3 players in the game
+        (2, None, 6, 403), # the player asking isn't the creator
+        (100, None, 4, 403) # the player asking doesn't exist
+    )
+)
+def test_player_list(app, client, this_player_id, expected_length, expected_error_id, expected_status_code):
+    response = client.post(
+        '/creator_access/player_list',
+        json={'player_id' : this_player_id}
+    )
+
+    # with app.app_context():
+    #     assert get_db().execute(
+    #         'SELECT is_creator, game_code FROM players'
+    #         ' WHERE player_id = ?',
+    #         (this_player_id,)
+    #     ).fetchone()[0] == 5
+
+    assert response.status_code == expected_status_code
+
+    if expected_error_id is None:
+        assert len(response.get_json()['players']) == expected_length
+    else:
+        assert response.get_json()['error_id'] == expected_error_id
