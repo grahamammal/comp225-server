@@ -14,7 +14,7 @@ from assassin_server.__init__ import internal_error
 
 bp = Blueprint('status_access', __name__, url_prefix='/status_access')
 
-@bp.route('/is_alive', methods = ['POST'])
+@bp.route('/is_alive', methods = ['GET'])
 @jwt_required
 def is_alive():
     #finds the id of whoever sent the token

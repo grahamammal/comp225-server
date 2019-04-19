@@ -34,26 +34,26 @@ def test_add_player(client,
         assert response.get_json()['error_id']==expected_error_id
 
 @pytest.mark.parametrize(
-    ('this_player_id','expected_error_id','expected_status_code', 'guessed_target_kill_code'),
+    ('player_has_target', 'player_is_alive', 'guessed_correct', 'expected_error_id','expected_status_code'),
     (
-        (4, 5, 400, None), # player has no target
-        (5, None, 302, 1006), # player wins
-        (1, None, 200, 1003), # player got target but didn't win
-        (7, 9, 400, None), # player is dead
-        (1, 10, 400, 1234), # player gave wrong kill code
+        (False, True, None, 5, 400), # player has no target
+        (True, True, True, None, 302), # player wins
+        (True, True, True, None, 200), # player got target but didn't win
+        (None, True, None, 9, 400), # player is dead
+        (True, True, False, 10, 400), # player gave wrong kill code
+        (None, None, None, None, 401)
     )
 )
-def test_got_target(client, this_player_id, expected_error_id, expected_status_code, guessed_target_kill_code):
+def test_got_target(client, player_has_target, expected_error_id, expected_status_code, guessed_correct):
+    response = client.post(
+        '/player_access/got_target',
+        json={'player_id' : this_player_id,
+              'guessed_target_kill_code' : guessed_target_kill_code}
+    )
 
-        response = client.post(
-            '/player_access/got_target',
-            json={'player_id' : this_player_id,
-                  'guessed_target_kill_code' : guessed_target_kill_code}
-        )
-
-        assert response.status_code==expected_status_code
-        if expected_error_id is not None:
-            assert response.get_json()['error_id']==expected_error_id
+    assert response.status_code==expected_status_code
+    if expected_error_id is not None:
+        assert response.get_json()['error_id']==expected_error_id
 
 def test_won_game(client):
     response=client.get('/player_access/won_game')

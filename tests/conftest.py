@@ -79,11 +79,13 @@ def create_test_game(client, num_players, game_state):
 
 # adds a player and returns a dictonary of relevant information
 def add_test_player(client, is_creator, game_code):
+    random_first_name = 'test' + str(random.uniform(0, 10))
+    random_last_name = 'test' + str(random.uniform(0, 10))
     add_player_response=client.post(
         '/player_access/add_player',
         json={
-            'player_first_name' : 'test' + str(random.uniform(0, 10)),
-            'player_last_name' : 'test' + str(random.uniform(0, 10)),
+            'player_first_name' : random_first_name,
+            'player_last_name' : random_last_name,
             'is_creator' : is_creator,
             'game_code' : game_code,
         }
@@ -93,5 +95,7 @@ def add_test_player(client, is_creator, game_code):
 
     player_info['game_code'] = game_code
     player_info['is_creator'] = is_creator
+    player_info['player_first_name'] = random_first_name
+    player_info['player_last_name'] = random_last_name
 
     return player_info
