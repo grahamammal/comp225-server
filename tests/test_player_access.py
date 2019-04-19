@@ -1,6 +1,7 @@
 import pytest
 from flask import session
 from assassin_server.db import get_db
+from conftest import create_test_game
 
 @pytest.mark.parametrize(
     ('player_first_name', 'player_last_name',
@@ -82,8 +83,8 @@ def test_get_game_info(client, game_code, expected_rules, expected_name, expecte
 @pytest.mark.parametrize(
     ('this_player_id','expected_error_id', 'expected_status_code'),
     (
-        (4, 5, 400),
-        (1, None, 200)
+        (4, 5, 400), # this player's game has not started
+        (1, None, 200) #
     )
 )
 def test_request_target(app, client, this_player_id, expected_error_id, expected_status_code):

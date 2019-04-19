@@ -3,8 +3,9 @@ import re
 import random
 import string
 from flask import session
-from assassin_server.db import get_db
 
+from assassin_server.db import get_db
+from conftest import create_test_game
 
 @pytest.mark.parametrize(
     ('game_name', 'game_rules', 'expected_error_id', 'expected_status_code'),
@@ -28,32 +29,44 @@ def test_create_game(client, game_name, game_rules, expected_error_id, expected_
         assert 1000<=json_data['game_code'] and json_data['game_code']<10000
 
 @pytest.mark.parametrize(
-    ('num_players', 'is_creator', 'player_id', 'expected_error_id', 'expected_status_code'),
+    ('num_players', 'is_creator', 'expected_error_id', 'expected_status_code'),
     (
-        (10, True, 18, None, 200), # the creator tries to start a 10 person hunt
-        (10, False, 18, 6, 403), # a player other than the creator tries to start a 10 person hunt
-        (1, True, 9, None, 302), # the creator tries to start a 1 person hunt
-        (1, False, 9, 6, 403), # a player other than the creator tries to start a 1 person hunt
-        (0, True, 100, 4, 403), # a creator that doesn't exist tries to start a hunt
-        (0, False, 100, 4, 403), # a player that doesn't exist tries to start a hunt
+        (10, True, None, 200), # the creator tries to start a 10 person hunt
+        (10, False, 6, 403), # a player other than the creator tries to start a 10 person hunt
+        (1, True, None, 302), # the creator tries to start a 1 person hunt
+        (None, False, None, 401), # a player that doesn't exist tries to start a hunt
     )
 )
-def test_start_hunt(client, num_players, is_creator, player_id, expected_error_id, expected_status_code):
+def test_start_hunt(client, num_players, is_creator, expected_error_id, expected_status_code):
 
-    for i in range(num_players):
-        if i+1 == num_players and is_creator:
-            generate_player(client, True)
+    if num_players is None:
+        headers=headers = {'Authorization' : 'Bearer ' + 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1NTU2MjA3MTMsIm5iZiI6MTU1NTYyMDcxMywianRpIjoiZTc1YTU5MzEtODU2Yy00OTcwLThiZmItNDRhMWU2OTI3OGJiIiwiZXhwIjoxNTU1NjIxNjEzLCJpZGVudGl0eSI6NSwiZnJlc2giOmZhbHNlLCJ0eXBlIjoiYWNjZXNzIn0.4lpagzD_gVJqWWXW37CkzuccHYoMtjVOQ7j08SXbb_0'}
+        response=client.get(
+            '/creator_access/start_hunt',
+            headers=headers
+        )
+
+    else:
+        players_info=create_test_game(client, num_players, 0)
+
+        if is_creator:
+            headers=headers = {'Authorization' : 'Bearer ' + players_info[0]['access_token']}
+            response=client.get(
+                '/creator_access/start_hunt',
+                headers=headers
+            )
+
         else:
-            generate_player(client, False)
+            headers=headers = {'Authorization' : 'Bearer ' + players_info[1]['access_token']}
+            response=client.get(
+                '/creator_access/start_hunt',
+                headers=headers
+            )
 
-    response=client.post(
-        '/creator_access/start_hunt',
-        json={'player_id' : player_id}
-    )
+    response_json=response.get_json()
 
     assert response.status_code==expected_status_code
-    if expected_error_id is not None:
-        assert response.get_json()['error_id']==expected_error_id
+    assert response.get_json().get('error_id') == expected_error_id
 
 def generate_player(client, is_creator):
 
@@ -89,23 +102,38 @@ def test_max_games(client, app):
 
 
 @pytest.mark.parametrize(
-    ('this_player_id', 'expected_length', 'expected_error_id', 'expected_status_code'),
+    ('num_players', 'is_creator', 'expected_length', 'expected_error_id', 'expected_status_code'),
     (
-        (8, 1, None, 200), # there is only 1 player in the game
-        (1, 3, None, 200), # there are 3 players in the game
-        (2, None, 6, 403), # the player asking isn't the creator
-        (100, None, 4, 403) # the player asking doesn't exist
+        (1, True, 1, None, 200), # creator asking, there is only 1 player in the game
+        (3, 1, 3, None, 200), # creator asking, there are 3 players in the game
+        (3, 0, None, 6, 403), # the player asking isn't the creator
+        (None, None, None, None, 401) # the player asking doesn't exist
     )
 )
-def test_player_list(app, client, this_player_id, expected_length, expected_error_id, expected_status_code):
-    response = client.post(
-        '/creator_access/player_list',
-        json={'player_id' : this_player_id}
-    )
+def test_player_list(client, num_players, is_creator, expected_length, expected_error_id, expected_status_code):
+    if num_players is None:
+        headers=headers = {'Authorization' : 'Bearer ' + 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1NTU2MjA3MTMsIm5iZiI6MTU1NTYyMDcxMywianRpIjoiZTc1YTU5MzEtODU2Yy00OTcwLThiZmItNDRhMWU2OTI3OGJiIiwiZXhwIjoxNTU1NjIxNjEzLCJpZGVudGl0eSI6NSwiZnJlc2giOmZhbHNlLCJ0eXBlIjoiYWNjZXNzIn0.4lpagzD_gVJqWWXW37CkzuccHYoMtjVOQ7j08SXbb_0'}
+        response=client.get(
+            '/creator_access/start_hunt',
+            headers=headers
+        )
+    else:
+        players_info=create_test_game(client, num_players, 0)
+
+        if is_creator:
+            headers=headers = {'Authorization' : 'Bearer ' + players_info[0]['access_token']}
+            response=client.get(
+                '/creator_access/player_list',
+                headers=headers
+            )
+        else:
+            headers=headers = {'Authorization' : 'Bearer ' + players_info[1]['access_token']}
+            response=client.get(
+                '/creator_access/player_list',
+                headers=headers
+            )
 
     assert response.status_code == expected_status_code
-
-    if expected_error_id is None:
-        assert len(response.get_json()['players']) == expected_length
-    else:
-        assert response.get_json()['error_id'] == expected_error_id
+    assert response.get_json().get('error_id') == expected_error_id
+    if expected_length is not None:
+        assert len(response.get_json().get('players')) == expected_length

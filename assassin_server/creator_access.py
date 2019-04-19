@@ -4,6 +4,10 @@ from flask import (
     Blueprint, flash, g, redirect, render_template, request, session, url_for, jsonify, abort, redirect, url_for
 )
 
+from flask_jwt_extended import (
+    JWTManager, jwt_required, create_access_token, get_jwt_identity
+)
+
 from assassin_server.db import get_db, row_to_dict, table_to_dict
 from assassin_server.player_access import won_game
 from assassin_server.__init__ import internal_error
@@ -62,11 +66,12 @@ def create_game():
 
 # Doesn't check if targets already exists. Not sure if this is a problem
 # Trying to reassign targets will make UNIQUE constraint on target id fail, return a 500
-@bp.route('/start_hunt', methods=['POST'])
+@bp.route('/start_hunt', methods=['GET'])
+@jwt_required
 def start_hunt():
     """Starts the hunting phase of the game"""
-    content = request.get_json()
-    player_id = content ['player_id']
+    #finds the id of whoever sent the token
+    player_id = get_jwt_identity()
 
     db=get_db()
 
@@ -96,11 +101,11 @@ def start_hunt():
             'SELECT * FROM players'
             ' WHERE game_code = ?',
             (game_code, )).fetchall())<2:
-        return redirect(url_for('player_access.won_game'))
+        return jsonify({'message' : 'You Won!'}), 302
 
 
     players_with_target=generate_targets(game_code)
-   
+
     #give players targets
     for player in players_with_target:
         #not sure why I need to do this but it didn't work when I placed the dictionary access in the sql query
@@ -119,7 +124,7 @@ def start_hunt():
         )
         db.commit()
 
-    
+
     #update game_state
     db.execute(
         'UPDATE games'
@@ -130,13 +135,13 @@ def start_hunt():
     db.commit()
 
 
-    return '', 200
+    return jsonify({'message' : 'success'}), 200
 
-@bp.route('/player_list', methods=['POST'])
+@bp.route('/player_list', methods=['GET'])
+@jwt_required
 def player_list():
-
-    content = request.get_json()
-    player_id = content['player_id']
+    #finds the id of whoever sent the token
+    player_id = get_jwt_identity()
 
     db = get_db()
     creator_info = db.execute(

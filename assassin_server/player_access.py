@@ -1,7 +1,10 @@
 import functools, random
-
 from flask import (
     Blueprint, flash, g, redirect, render_template, request, session, url_for, jsonify, abort, redirect, url_for
+)
+
+from flask_jwt_extended import (
+    JWTManager, jwt_required, create_access_token, get_jwt_identity
 )
 
 from assassin_server.db import get_db, row_to_dict
@@ -79,20 +82,23 @@ def add_player():
         (player_first_name, player_last_name, game_code)
     ).fetchone()[0]
 
+    access_token=create_access_token(identity=player_id)
+
 
     output = {
-        'player_id': player_id,
-        'player_kill_code': player_kill_code
+        'player_kill_code': player_kill_code,
+        'access_token' : access_token
     }
+
 
     return jsonify(output)
 
 # May want to add a way to ensure this is sent from our app
 @bp.route('/got_target', methods=['POST'])
+@jwt_required
 def got_target():
-
-    content=request.get_json()
-    player_id=content['player_id']
+    #finds the id of whoever sent the token
+    player_id = get_jwt_identity()
     #asking the player to provide their target's kill code
     guessed_target_kill_code = content['guessed_target_kill_code']
 
@@ -167,6 +173,7 @@ def got_target():
 def won_game():
     return jsonify({"win": True})
 
+
 @bp.route('/get_game_info',  methods=['POST'])
 def get_game_info():
     content=request.get_json()
@@ -186,12 +193,13 @@ def get_game_info():
     return jsonify(output)
 
 #may want to ensure request is sent from app
-@bp.route('/request_target', methods=['POST'])
+@bp.route('/request_target', methods=['GET'])
+@jwt_required
 def request_target():
     """Requests the target of the player who made the request, using that players session info"""
-    #makes sure your session has a player associated with it
-    content=request.get_json()
-    player_id=content['player_id']
+
+    #finds the id of whoever sent the token
+    player_id = get_jwt_identity()
 
 
 
@@ -210,13 +218,12 @@ def request_target():
     output=row_to_dict(target)
     return jsonify(output)
 
-# CHANGE the direct access to kill code or make the player id much safer!
 #Returns the player's kill code
 @bp.route('/request_kill_code', methods=['POST'])
+@jwt_required
 def request_kill_code():
-
-    content=request.get_json()
-    player_id=content['player_id']
+    #finds the id of whoever sent the token
+    player_id = get_jwt_identity()
 
     db = get_db()
 
@@ -235,11 +242,12 @@ def request_kill_code():
     output=row_to_dict(player_kill_code)
     return jsonify(output)
 
-@bp.route('/remove_from_game', methods=['POST'])
+@bp.route('/remove_from_game', methods=['GET'])
+@jwt_required
 def remove_from_game():
 
-    content=request.get_json()
-    player_id=content['player_id']
+    #finds the id of whoever sent the token
+    player_id = get_jwt_identity()
 
     db=get_db()
 

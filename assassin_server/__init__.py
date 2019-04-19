@@ -5,6 +5,11 @@ from flask import Flask, session, abort, render_template, jsonify
 from flask_session import Session
 from datetime import timedelta
 
+from flask_jwt_extended import (
+    JWTManager, jwt_required, create_access_token,
+    get_jwt_identity
+)
+
 SESSION_TYPE = 'redis'
 PERMANANT_SESSION_LIFETIME = timedelta(days=365)
 sess = Session()
@@ -34,13 +39,16 @@ def create_app(test_config=None):
     except OSError:
         pass
 
+    app.config['JWT_ACCESS_TOKEN_EXPIRES']=False
+
     #intialises session on server
     sess.init_app(app)
-
+    #initalises json web tokens
+    jwt = JWTManager(app)
     # a simple page that says hello
     @app.route('/hello')
     def hello():
-        return 'Hello, World!'
+        return 'Hello, World!', 200
 
 
     #adds database to the app
