@@ -44,7 +44,7 @@ def test_add_player(client,
         (None, None, None, None, 401)
     )
 )
-def test_got_target(client, player_has_target, expected_error_id, expected_status_code, guessed_correct):
+def test_got_target(client, player_has_target, player_is_alive, guessed_correct, expected_error_id, expected_status_code):
     response = client.post(
         '/player_access/got_target',
         json={'player_id' : this_player_id,
