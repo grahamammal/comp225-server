@@ -303,7 +303,7 @@ POST http://<localhost>/creator_access/create_game
 
 ### Start Hunt
 
-This endpoint will start hunting phase of the game of the game creator. This request can only be made by a game creator.
+This endpoint will start hunting phase of the game of the game creator. This request can only be made by a game creator. Returns true if the creator is the only player and false if otherwise.
 
 #### HTTP Request
 ---
@@ -322,7 +322,11 @@ POST http://<localhost>/creator_access/start_hunt
 
 ##### Return Value
 ---
-None
+```
+{
+    "win": true / false
+}
+```
 
 ### Player List
 
@@ -557,4 +561,3 @@ The assassin-server API uses the following error codes:
 | 400 | Bad Request -- Your request was bad, maybe there is no such player or game, a player with that name already exists, etc. Check the server code to find out why. |
 | 403 | Forbidden -- You don't have the privileges to make that request |
 | 500 | Internal Server Error -- Something went wrong with the server! Oh no!!
-

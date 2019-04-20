@@ -431,7 +431,7 @@
 }
 </code></pre>
 <h3 id="start-hunt">Start Hunt</h3>
-<p>This endpoint will start hunting phase of the game of the game creator. This request can only be made by a game creator.</p>
+<p>This endpoint will start hunting phase of the game of the game creator. This request can only be made by a game creator. Returns true if the creator is the only player and false if otherwise.</p>
 <h4 id="http-request-8">HTTP Request</h4>
 <hr>
 <pre><code>POST http://&lt;localhost&gt;/creator_access/start_hunt
@@ -459,7 +459,10 @@
 </tbody>
 </table><h5 id="return-value-8">Return Value</h5>
 <hr>
-<p>None</p>
+<pre><code>{
+    "win": true / false
+}
+</code></pre>
 <h3 id="player-list">Player List</h3>
 <p>This endpoint will return a list of the names of the players in the game.</p>
 <h4 id="http-request-9">HTTP Request</h4>
