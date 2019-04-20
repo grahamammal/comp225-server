@@ -96,7 +96,7 @@ def start_hunt():
             'SELECT * FROM players'
             ' WHERE game_code = ?',
             (game_code, )).fetchall())<2:
-        return redirect(url_for('player_access.won_game'))
+        return jsonify({"win": True})
 
 
     players_with_target=generate_targets(game_code)
@@ -130,7 +130,7 @@ def start_hunt():
     db.commit()
 
 
-    return '', 200
+    return jsonify({"win": False})
 
 @bp.route('/player_list', methods=['POST'])
 def player_list():
