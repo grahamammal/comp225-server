@@ -192,7 +192,7 @@
 }
 </code></pre>
 <h3 id="got-target">Got Target</h3>
-<p>This endpoint remove your target from the game and provide you with a new one. If you got the last other person, it will redirect to /won_game</p>
+<p>This endpoint removes your target from the game and provides you with a new one. If you got the second to last person, it will return <code>win: True</code></p>
 <h4 id="http-request-1">HTTP Request</h4>
 <hr>
 <pre><code>POST http://&lt;localhost&gt;/player_access/got_target
@@ -225,7 +225,11 @@
 </tr>
 </tbody>
 </table><h4 id="return-value-1">Return Value</h4>
-<p>Status Code 302 if you won the game, 200 otherwise.</p>
+<p>Status code 200 if the kill code is correct. Win is true if you won the game (you are now the last player) and false otherwise.</p>
+<pre><code>{
+	"win": true / false
+}
+</code></pre>
 <h3 id="won-game">Won Game</h3>
 <p>This endpoint tells you you won the game!</p>
 <h4 id="http-request-2">HTTP Request</h4>

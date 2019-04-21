@@ -111,7 +111,7 @@ POST http://<localhost>/player_access/get_game_info
 ```
 ### Got Target
 
-This endpoint remove your target from the game and provide you with a new one. If you got the last other person, it will redirect to /won_game
+This endpoint removes your target from the game and provides you with a new one. If you got the second to last person, it will return ```win: True```
 
 #### HTTP Request
 ---
@@ -131,7 +131,13 @@ POST http://<localhost>/player_access/got_target
 | guessed\_target\_kill\_code | None | The kill code of the player you got |
 
 #### Return Value
-Status Code 302 if you won the game, 200 otherwise.
+Status code 200 if the kill code is correct. Win is true if you won the game (you are now the last player) and false otherwise.
+
+```
+{
+	"win": true / false
+}
+```
 
 ### Won Game
 

@@ -130,8 +130,8 @@ def got_target():
         (target_id, )
     ).fetchone()[0]
 
-    if guessed_target_kill_code != target_kill_code:
-        return(internal_error(10), 400)
+    if guessed_target_kill_code != str(target_kill_code):
+        return (internal_error(10), 400)
 
     # retrieve the target of your target
     new_target=row_to_dict(
@@ -159,9 +159,9 @@ def got_target():
     db.commit()
     #checks if you just got the second to last player, meaning you won
     if player_id is new_target["target_id"]:
-        return jsonify({"win": True}), 302
+        return jsonify({"win": True}), 200
 
-    return ('', 200)
+    return jsonify({"win": False}), 200
 
 @bp.route('/won_game')
 def won_game():
