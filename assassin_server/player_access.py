@@ -100,6 +100,7 @@ def got_target():
     #finds the id of whoever sent the token
     player_id = get_jwt_identity()
     #asking the player to provide their target's kill code
+    content=request.get_json()
     guessed_target_kill_code = content['guessed_target_kill_code']
 
 
@@ -167,7 +168,7 @@ def got_target():
     if player_id is new_target["target_id"]:
         return jsonify({"win": True}), 302
 
-    return ('', 200)
+    return (jsonify({'message' : 'success'}), 200)
 
 @bp.route('/won_game')
 def won_game():
@@ -219,7 +220,7 @@ def request_target():
     return jsonify(output)
 
 #Returns the player's kill code
-@bp.route('/request_kill_code', methods=['POST'])
+@bp.route('/request_kill_code', methods=['GET'])
 @jwt_required
 def request_kill_code():
     #finds the id of whoever sent the token
@@ -282,7 +283,7 @@ def remove_from_game():
         )
         db.commit()
 
-        return '', 200
+        return jsonify({'message' : 'success'}), 200
 
 
     is_alive = db.execute(
@@ -304,4 +305,4 @@ def remove_from_game():
     )
     db.commit()
 
-    return '', 200
+    return jsonify({'message' : 'success'}), 200

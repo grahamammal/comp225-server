@@ -69,7 +69,7 @@ def create_test_game(client, num_players, game_state):
     # starts the game if we want to
     if game_state == 1:
         headers = {'Authorization' : 'Bearer ' + creator_info['access_token']}
-        start_hunt_response=client.post(
+        start_hunt_response=client.get(
             '/creator_access/start_hunt',
             headers = headers
         )
