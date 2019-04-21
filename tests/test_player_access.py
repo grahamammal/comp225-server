@@ -34,17 +34,43 @@ def test_add_player(client,
         assert response.get_json()['error_id']==expected_error_id
 
 @pytest.mark.parametrize(
-    ('player_has_target', 'player_is_alive', 'guessed_correct', 'expected_error_id','expected_status_code'),
+    ('num_players', 'game_state', 'player_is_alive', 'guessed_correct', 'expected_error_id','expected_status_code'),
     (
-        (False, True, None, 5, 400), # player has no target
-        (True, True, True, None, 302), # player wins
-        (True, True, True, None, 200), # player got target but didn't win
-        (None, True, None, 9, 400), # player is dead
-        (True, True, False, 10, 400), # player gave wrong kill code
-        (None, None, None, None, 401)
+        (3, 0, True, None, 5, 400), # player has no target
+        (2, 1, True, True, None, 302), # player wins
+        (3, 1, True, True, None, 200), # player got target but didn't win
+        (3, 1, True, None, 9, 400), # player is dead
+        (3, 1, True, False, 10, 400), # player gave wrong kill code
+        (None, None, None, None, None, 401) # player doesn't exist
     )
 )
-def test_got_target(client, player_has_target, player_is_alive, guessed_correct, expected_error_id, expected_status_code):
+def test_got_target(client, num_players, game_state, player_is_alive, guessed_correct, expected_error_id, expected_status_code):
+
+    if num_players is None:
+        headers=headers = {'Authorization' : 'Bearer ' + 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1NTU2MjA3MTMsIm5iZiI6MTU1NTYyMDcxMywianRpIjoiZTc1YTU5MzEtODU2Yy00OTcwLThiZmItNDRhMWU2OTI3OGJiIiwiZXhwIjoxNTU1NjIxNjEzLCJpZGVudGl0eSI6NSwiZnJlc2giOmZhbHNlLCJ0eXBlIjoiYWNjZXNzIn0.4lpagzD_gVJqWWXW37CkzuccHYoMtjVOQ7j08SXbb_0'}
+        response=client.post(
+            '/player_access/got_target',
+            headers=headers,
+            json={'guessed_target_kill_code' : 1234}
+        )
+    else:
+        players_info = create_test_game(client, num_players, game_state)
+
+        kill_code_guess = None
+        with app.app_context():
+            kill_code_guess=get_db().execute(
+                'SELECT target_kill_code FROM players'
+                ' WHERE player_first_name = ? AND player_last_name = ?',
+                (players_info[0]['player_first_name'], players_info[0]['player_last_name'])
+            ).fetchone()[0]
+
+        headers=headers = {'Authorization' : 'Bearer ' + players_info[0]['access_token']}
+        response=client.post(
+            '/player_access/got_target',
+            headers=headers,
+            json={'guessed_target_kill_code' : 1234}
+        )
+
     response = client.post(
         '/player_access/got_target',
         json={'player_id' : this_player_id,
