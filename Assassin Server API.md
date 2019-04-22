@@ -117,8 +117,8 @@ This endpoint remove your target from the game and provide you with a new one. I
 ---
 ```
 POST http://<localhost>/player_access/got_target
+	headers: Authorization: "Bearer dyJ0eXAiOiJKV1Q..."
     {
-        "player_id" = 1
         "guessed_target_kill_code" = 1234
     }
 ```
@@ -184,7 +184,7 @@ POST http://<localhost>/player_access/add_player
 ---
 ```
 {
-    "player_id" : 1
+    "access_token" : "dyJ0eXAiOiJKV1Q..."
     "player_kill_code" : 1234
 }
 ```
@@ -196,10 +196,8 @@ This endpoint will request the target of the player who navigated here.
 #### HTTP Request
 ---
 ```
-POST http://<localhost>/player_access/request_target
-    {
-        "player_id" : 1
-    }
+GET http://<localhost>/player_access/request_target
+	headers: Authorization: "Bearer dyJ0eXAiOiJKV1Q..."
 ```
 
 #### URL Parameters
@@ -225,10 +223,8 @@ This endpoint will return your kill code.
 #### HTTP Request
 ---
 ```
-POST http://<localhost>/player_access/request_kill_code
-    {
-        "player_id" : 1
-    }
+GET http://<localhost>/player_access/request_kill_code
+	headers: Authorization: "Bearer dyJ0eXAiOiJKV1Q..."
 ```
 
 #### URL Parameters
@@ -253,10 +249,8 @@ Remove yourself from the game after you've died.
 #### HTTP Request
 ---
 ```
-POST http://<localhost>/player_access/remove_from_game
-    {
-        "player_id" = 1
-    }
+GET http://<localhost>/player_access/remove_from_game
+	headers: Authorization: "Bearer dyJ0eXAiOiJKV1Q..."
 ```
 
 #### URL Parameters
@@ -308,10 +302,8 @@ This endpoint will start hunting phase of the game of the game creator. This req
 #### HTTP Request
 ---
 ```
-POST http://<localhost>/creator_access/start_hunt
-    {
-        "player_id" : 1
-    }
+GET http://<localhost>/creator_access/start_hunt
+ 	headers: Authorization: "Bearer dyJ0eXAiOiJKV1Q..."
 ```
 
 #### URL Parameters
@@ -331,10 +323,8 @@ This endpoint will return a list of the names of the players in the game.
 #### HTTP Request
 ---
 ```
-POST http://<localhost>/creator_access/player_list
-    {
-        "player_id" : 1
-    }
+GET http://<localhost>/creator_access/player_list
+	headers: Authorization: "Bearer dyJ0eXAiOiJKV1Q..."
 ```
 
 #### URL Parameters
@@ -346,6 +336,7 @@ POST http://<localhost>/creator_access/player_list
 ##### Return Value
 ---
 ```
+"players":
 [
     {
         "player_first_name": "test1"
@@ -367,10 +358,8 @@ This endpoint will tell the player asking if they are alive or not
 #### HTTP Request
 ---
 ```
-POST http://<localhost>/status_access/is_alive
-    {
-        "player_id" : 1
-    }
+GET http://<localhost>/status_access/is_alive
+	headers: Authorization: "Bearer dyJ0eXAiOiJKV1Q..."
 ```
 
 #### URL Parameters
@@ -410,7 +399,7 @@ POST http://<localhost>/status_access/is_game_started
 ---
 ```
 {
-    "is_alive": 1
+    "game_state": 1
 }
 ```
 

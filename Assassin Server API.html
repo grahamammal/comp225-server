@@ -196,8 +196,8 @@
 <h4 id="http-request-1">HTTP Request</h4>
 <hr>
 <pre><code>POST http://&lt;localhost&gt;/player_access/got_target
+	headers: Authorization: "Bearer dyJ0eXAiOiJKV1Q..."
     {
-        "player_id" = 1
         "guessed_target_kill_code" = 1234
     }
 </code></pre>
@@ -289,7 +289,7 @@
 </table><h4 id="return-value-3">Return Value</h4>
 <hr>
 <pre><code>{
-    "player_id" : 1
+    "access_token" : "dyJ0eXAiOiJKV1Q..."
     "player_kill_code" : 1234
 }
 </code></pre>
@@ -297,10 +297,8 @@
 <p>This endpoint will request the target of the player who navigated here.</p>
 <h4 id="http-request-4">HTTP Request</h4>
 <hr>
-<pre><code>POST http://&lt;localhost&gt;/player_access/request_target
-    {
-        "player_id" : 1
-    }
+<pre><code>GET http://&lt;localhost&gt;/player_access/request_target
+	headers: Authorization: "Bearer dyJ0eXAiOiJKV1Q..."
 </code></pre>
 <h4 id="url-parameters-4">URL Parameters</h4>
 <hr>
@@ -331,10 +329,8 @@
 <p>This endpoint will return your kill code.</p>
 <h4 id="http-request-5">HTTP Request</h4>
 <hr>
-<pre><code>POST http://&lt;localhost&gt;/player_access/request_kill_code
-    {
-        "player_id" : 1
-    }
+<pre><code>GET http://&lt;localhost&gt;/player_access/request_kill_code
+	headers: Authorization: "Bearer dyJ0eXAiOiJKV1Q..."
 </code></pre>
 <h4 id="url-parameters-5">URL Parameters</h4>
 <hr>
@@ -364,10 +360,8 @@
 <p>Remove yourself from the game after you’ve died.</p>
 <h4 id="http-request-6">HTTP Request</h4>
 <hr>
-<pre><code>POST http://&lt;localhost&gt;/player_access/remove_from_game
-    {
-        "player_id" = 1
-    }
+<pre><code>GET http://&lt;localhost&gt;/player_access/remove_from_game
+	headers: Authorization: "Bearer dyJ0eXAiOiJKV1Q..."
 </code></pre>
 <h4 id="url-parameters-6">URL Parameters</h4>
 <hr>
@@ -434,10 +428,8 @@
 <p>This endpoint will start hunting phase of the game of the game creator. This request can only be made by a game creator.</p>
 <h4 id="http-request-8">HTTP Request</h4>
 <hr>
-<pre><code>POST http://&lt;localhost&gt;/creator_access/start_hunt
-    {
-        "player_id" : 1
-    }
+<pre><code>GET http://&lt;localhost&gt;/creator_access/start_hunt
+ 	headers: Authorization: "Bearer dyJ0eXAiOiJKV1Q..."
 </code></pre>
 <h4 id="url-parameters-8">URL Parameters</h4>
 <hr>
@@ -464,10 +456,8 @@
 <p>This endpoint will return a list of the names of the players in the game.</p>
 <h4 id="http-request-9">HTTP Request</h4>
 <hr>
-<pre><code>POST http://&lt;localhost&gt;/creator_access/player_list
-    {
-        "player_id" : 1
-    }
+<pre><code>GET http://&lt;localhost&gt;/creator_access/player_list
+	headers: Authorization: "Bearer dyJ0eXAiOiJKV1Q..."
 </code></pre>
 <h4 id="url-parameters-9">URL Parameters</h4>
 <hr>
@@ -489,7 +479,8 @@
 </tbody>
 </table><h5 id="return-value-9">Return Value</h5>
 <hr>
-<pre><code>[
+<pre><code>"players":
+[
     {
         "player_first_name": "test1"
         "player_last_name": "test1"
@@ -505,10 +496,8 @@
 <p>This endpoint will tell the player asking if they are alive or not</p>
 <h4 id="http-request-10">HTTP Request</h4>
 <hr>
-<pre><code>POST http://&lt;localhost&gt;/status_access/is_alive
-    {
-        "player_id" : 1
-    }
+<pre><code>GET http://&lt;localhost&gt;/status_access/is_alive
+	headers: Authorization: "Bearer dyJ0eXAiOiJKV1Q..."
 </code></pre>
 <h4 id="url-parameters-10">URL Parameters</h4>
 <hr>
@@ -564,7 +553,7 @@
 </table><h4 id="return-value-11">Return Value</h4>
 <hr>
 <pre><code>{
-    "is_alive": 1
+    "game_state": 1
 }
 </code></pre>
 <h2 id="debug-requests">Debug Requests</h2>

@@ -34,13 +34,12 @@ def test_create_game(client, game_name, game_rules, expected_error_id, expected_
         (10, True, None, 200), # the creator tries to start a 10 person hunt
         (10, False, 6, 403), # a player other than the creator tries to start a 10 person hunt
         (1, True, None, 302), # the creator tries to start a 1 person hunt
-        (None, False, None, 401), # a player that doesn't exist tries to start a hunt
+        (None, False, 12, 422), # a player that doesn't exist tries to start a hunt
     )
 )
 def test_start_hunt(client, num_players, is_creator, expected_error_id, expected_status_code):
-
     if num_players is None:
-        headers=headers = {'Authorization' : 'Bearer ' + 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1NTU2MjA3MTMsIm5iZiI6MTU1NTYyMDcxMywianRpIjoiZTc1YTU5MzEtODU2Yy00OTcwLThiZmItNDRhMWU2OTI3OGJiIiwiZXhwIjoxNTU1NjIxNjEzLCJpZGVudGl0eSI6NSwiZnJlc2giOmZhbHNlLCJ0eXBlIjoiYWNjZXNzIn0.4lpagzD_gVJqWWXW37CkzuccHYoMtjVOQ7j08SXbb_0'}
+        headers=headers = {'Authorization' : 'Bearer ' + 'dyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1NTU2MjA3MTMsIm5iZiI6MTU1NTYyMDcxMywianRpIjoiZTc1YTU5MzEtODU2Yy00OTcwLThiZmItNDRhMWU2OTI3OGJiIiwiZXhwIjoxNTU1NjIxNjEzLCJpZGVudGl0eSI6NSwiZnJlc2giOmZhbHNlLCJ0eXBlIjoiYWNjZXNzIn0.4lpagzD_gVJqWWXW37CkzuccHYoMtjVOQ7j08SXbb_0'}
         response=client.get(
             '/creator_access/start_hunt',
             headers=headers
@@ -107,12 +106,12 @@ def test_max_games(client, app):
         (1, True, 1, None, 200), # creator asking, there is only 1 player in the game
         (3, 1, 3, None, 200), # creator asking, there are 3 players in the game
         (3, 0, None, 6, 403), # the player asking isn't the creator
-        (None, None, None, None, 401) # the player asking doesn't exist
+        (None, None, None, 12, 422) # the player asking doesn't exist
     )
 )
 def test_player_list(client, num_players, is_creator, expected_length, expected_error_id, expected_status_code):
     if num_players is None:
-        headers=headers = {'Authorization' : 'Bearer ' + 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1NTU2MjA3MTMsIm5iZiI6MTU1NTYyMDcxMywianRpIjoiZTc1YTU5MzEtODU2Yy00OTcwLThiZmItNDRhMWU2OTI3OGJiIiwiZXhwIjoxNTU1NjIxNjEzLCJpZGVudGl0eSI6NSwiZnJlc2giOmZhbHNlLCJ0eXBlIjoiYWNjZXNzIn0.4lpagzD_gVJqWWXW37CkzuccHYoMtjVOQ7j08SXbb_0'}
+        headers=headers = {'Authorization' : 'Bearer ' + 'dyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1NTU2MjA3MTMsIm5iZiI6MTU1NTYyMDcxMywianRpIjoiZTc1YTU5MzEtODU2Yy00OTcwLThiZmItNDRhMWU2OTI3OGJiIiwiZXhwIjoxNTU1NjIxNjEzLCJpZGVudGl0eSI6NSwiZnJlc2giOmZhbHNlLCJ0eXBlIjoiYWNjZXNzIn0.4lpagzD_gVJqWWXW37CkzuccHYoMtjVOQ7j08SXbb_0'}
         response=client.get(
             '/creator_access/start_hunt',
             headers=headers

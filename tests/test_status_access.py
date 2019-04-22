@@ -8,7 +8,7 @@ from conftest import create_test_game
     (
         (0, None, 200), # a dead player asks for their status
         (1, None, 200), # an alive player asks for their status
-        (None, None, 401), # a non existent player asks for their status
+        (None, 12, 422), # a non existent player asks for their status
     )
 )
 def test_is_alive(app, client, expected_is_alive, expected_error_id, expected_status_code):
@@ -33,7 +33,7 @@ def test_is_alive(app, client, expected_is_alive, expected_error_id, expected_st
             headers=headers
         )
     else:
-        headers=headers = {'Authorization' : 'Bearer ' + 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1NTU2MjA3MTMsIm5iZiI6MTU1NTYyMDcxMywianRpIjoiZTc1YTU5MzEtODU2Yy00OTcwLThiZmItNDRhMWU2OTI3OGJiIiwiZXhwIjoxNTU1NjIxNjEzLCJpZGVudGl0eSI6NSwiZnJlc2giOmZhbHNlLCJ0eXBlIjoiYWNjZXNzIn0.4lpagzD_gVJqWWXW37CkzuccHYoMtjVOQ7j08SXbb_0'}
+        headers=headers = {'Authorization' : 'Bearer ' + 'dyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1NTU2MjA3MTMsIm5iZiI6MTU1NTYyMDcxMywianRpIjoiZTc1YTU5MzEtODU2Yy00OTcwLThiZmItNDRhMWU2OTI3OGJiIiwiZXhwIjoxNTU1NjIxNjEzLCJpZGVudGl0eSI6NSwiZnJlc2giOmZhbHNlLCJ0eXBlIjoiYWNjZXNzIn0.4lpagzD_gVJqWWXW37CkzuccHYoMtjVOQ7j08SXbb_0'}
         response=client.get(
             '/status_access/is_alive',
             headers=headers

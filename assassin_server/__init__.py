@@ -52,12 +52,11 @@ def create_app(test_config=None):
     # sets up the custom returns for messed up tokens
     @jwt.invalid_token_loader
     def my_invalid_token_callback(expired_token):
-        token_type = expired_token['type']
-        return jsonify(internal_error(12)), 422
+        return internal_error(12), 422
 
     @jwt.unauthorized_loader
     def my_unauthorized_loader_callback(expired_token):
-        return jsonify(internal_error(13)), 401
+        return internal_error(13), 401
 
 
 
