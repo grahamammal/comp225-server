@@ -14,3 +14,5 @@
 | 9 | 400 | "You are not dead or the last player" |
 | 10 | 400 | "Incorrect killcode" |
 | 11 | 400 | "The hunt hasn't started yet" |
+| 12 | 422 | "This JWT token is invalid" |
+| 13 | 401 | "Please supply a JWT token" |
