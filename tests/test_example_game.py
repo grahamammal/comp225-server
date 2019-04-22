@@ -1,149 +1,108 @@
 import pytest
 from flask import session
-from assassin_server.db import get_db, row_to_dict
+from assassin_server.db import get_db, row_to_dict, table_to_dict
+from conftest import create_test_game
 
 
-#For this test we'll run the example game in the TeX document
+#For this test we'll run a 10 person game
 def test_mock_game(client, app):
-    # We'll let Analeidi create the game
-    response=client.post(
-        '/creator_access/create_game',
-        json={'game_name':'Example Game', 'game_rules':'Example Rules'}
-    )
 
-    json_data=response.get_json()
-    game_code=json_data['game_code']
-    assert 1000 <= game_code and game_code < 10000
-
-    with app.app_context():
-        assert get_db().execute(
-            'SELECT * FROM games WHERE game_code = ?',
-            (game_code,)
-        ).fetchone() is not None
-
-    # Now we'll add Analeidi to the game
-    add_player_assertions(client, app, 'Analeidi', 'Barrera', 1, game_code)
-
-    # Now we'll add Ellen, Corey, then Jacob to the game
-    add_player_assertions(client, app, 'Ellen', 'Graham', 0, game_code)
-    add_player_assertions(client, app, 'Corey', 'Pieper', 0, game_code)
-    add_player_assertions(client, app, 'Jacob', 'Weightman', 0, game_code)
-
+    game_size = 10
     # Now we'll start the game!
-    # Note that the targets are randomly generated and will be different from the example
-    creator_id = None
+    players_info = create_test_game(client, game_size, 1)
+
+    game_code = None
     with app.app_context():
-        creator_id=get_db().execute(
-            'SELECT player_id FROM players'
-            ' WHERE player_first_name = ? AND player_last_name = ? AND game_code = ?',
-            ('Analeidi', 'Barrera', game_code)
+        game_code = get_db().execute(
+            'SELECT game_code FROM players'
+            ' WHERE player_first_name = ?',
+            (players_info[0]['player_first_name'], )
         ).fetchone()[0]
 
-
-    response = client.post(
-        '/creator_access/start_hunt',
-        json={'player_id':creator_id}
-    )
-
-    assert response.status_code == 200
-
-    #make sure game_state changed
+    creator_id = None
     with app.app_context():
-        assert get_db().execute(
-            'SELECT game_state FROM games WHERE game_code = ?',
-            (game_code, )
-        ).fetchone()[0] == 1
+        creator_id = get_db().execute(
+            'SELECT player_id FROM players'
+            ' WHERE player_first_name = ? AND player_last_name = ?',
+            (players_info[0]['player_first_name'], players_info[0]['player_last_name'])
+        ).fetchone()[0]
+
+        assert isinstance(creator_id, int)
 
     #make sure each player has a target, and that the targeting function has cycle length 4
     with app.app_context():
-        current_id=creator_id
-        for i in range(4):
+        current_id = creator_id
+        for i in range(game_size):
             target_id = get_db().execute(
                 'SELECT target_id FROM players WHERE player_id = ?',
                 (current_id,)
             ).fetchone()[0]
 
             assert target_id is not None
-            if i < 3:
+            if i < game_size-1:
                 assert target_id is not None and target_id != creator_id
             else:
                 assert target_id == creator_id
             current_id=target_id
 
     # Start getting players
-    # First we'll let Analeidi get her target
-    next_getter = got_target_new_target(app, client, creator_id)
+    # First we'll the first player get their target
+    dead_player_index = player_got_target(app, client, players_info, 0, False)
 
-    #Then we'll let Analeidi's new target get their target
-    next_getter = got_target_new_target(app, client, next_getter)
+    # now we'll find the index of a player other than the first who is alive. We'll let them win
+    winner_index = None
+    for i in range(1, game_size):
+        if i != dead_player_index:
+            winner_index = i
 
-    #make sure the target of Analeidi's target is Analeidi
-    assert next_getter == creator_id
-
-    #find Analeidi's last target
-    last_target_info=None
+    # find the number of players left
+    num_players_alive = None
     with app.app_context():
-        last_target_info = get_db().execute(
-            'SELECT target_first_name, target_last_name, target_id FROM players'
-            ' WHERE player_id = ?',
-            (creator_id,)
-        ).fetchone()
+        num_players_alive = len(table_to_dict(get_db().execute(
+            'SELECT * FROM players'
+            ' WHERE game_code = ?',
+            (game_code, )
+        ).fetchall()))
 
-    response = client.post(
-        '/player_access/request_target',
-        json={'player_id':creator_id}
-    )
-    assert response.status_code == 200
-    assert response.get_json()['target_first_name'] == last_target_info[0]
-    assert response.get_json()['target_last_name'] == last_target_info[1]
+    assert num_players_alive > 0
 
-    last_target_id = last_target_info[2]
+    # kill all the other players
+    for i in range(num_players_alive-1):
+        if i == num_players_alive-2:
+            player_got_target(app, client, players_info, winner_index, True)
+        else:
+            player_got_target(app, client, players_info, winner_index, False)
 
-    # We'll let Analeidi win the game
-    last_target_kill_code=None
+    # make sure there's 1 player left
     with app.app_context():
-        last_target_kill_code=get_db().execute(
-            'SELECT player_kill_code FROM players'
-            ' WHERE player_id = ?',
-            (last_target_id, )
-        ).fetchone()[0]
+        num_players_alive = len(table_to_dict(get_db().execute(
+            'SELECT * FROM players'
+            ' WHERE game_code = ?',
+            (game_code, )
+        ).fetchall()))
 
-    response = client.post(
-        '/player_access/got_target',
-        json={'player_id':creator_id,
-              'guessed_target_kill_code':last_target_kill_code}
-    )
+        assert num_players_alive == 1
 
-    assert response.status_code == 302
-
-    #Remove Analeidi's last target
-    response=client.post(
+    # finally the winner asks to be removed from the game
+    headers = {'Authorization' : 'Bearer ' + players_info[winner_index]['access_token']}
+    response=client.get(
         '/player_access/remove_from_game',
-        json={'player_id':last_target_id}
+        headers=headers
     )
     assert response.status_code == 200
 
-    #Make sure they're removed
+    #Make sure both the winner and the game are deleted
     with app.app_context():
         assert get_db().execute(
             'SELECT * FROM players'
-            ' WHERE player_id = ?',
-            (last_target_id, )
+            ' WHERE player_first_name = ?',
+            (players_info[winner_index]['player_first_name'], )
         ).fetchone() is None
 
-    #Now Analeidi tells the game to remove her
-    response=client.post(
-        '/player_access/remove_from_game',
-        json={'player_id':creator_id}
-    )
-    assert response.status_code == 200
-
-    #Make sure both she and the game are deleted
-    with app.app_context():
         assert get_db().execute(
             'SELECT * FROM players'
-            ' WHERE player_id = ?',
-            (creator_id, )
+            ' WHERE game_code = ?',
+            (game_code, )
         ).fetchone() is None
 
         assert get_db().execute(
@@ -153,81 +112,63 @@ def test_mock_game(client, app):
         ).fetchone() is None
 
 # Get's the target of a player and returns their new target's id
-def got_target_new_target(app, client, getter_id):
+def player_got_target(app, client, players_info, getter_index, is_winning_got):
 
-    target_id = None
-    target_kill_code = None
-    with app.app_context():
-        target_id = get_db().execute(
-            'SELECT target_id FROM players'
-            ' WHERE player_id = ?',
-            (getter_id,)
-        ).fetchone()[0]
-        target_kill_code = get_db().execute(
-            'SELECT player_kill_code FROM players'
-            ' WHERE player_id = ?',
-            (target_id,)
-        ).fetchone()[0]
+    headers = {'Authorization' : 'Bearer ' + players_info[getter_index]['access_token']}
+    response=client.get(
+        '/player_access/request_target',
+        headers=headers
+    )
+    target_name = response.get_json()
+    assert response.status_code == 200
+
+    target_index = None
+    for i in range(len(players_info)):
+        if players_info[i]['player_first_name'] == target_name['target_first_name']:
+            target_index = i
+
+    headers = {'Authorization' : 'Bearer ' + players_info[target_index]['access_token']}
+    response=client.get(
+        '/player_access/request_kill_code',
+        headers=headers
+    )
+
+    assert response.status_code == 200
+
+    target_kill_code = response.get_json()['player_kill_code']
 
     #get your target
-    response = client.post(
-        '/player_access/got_target',
-        json={'player_id':getter_id,
-              'guessed_target_kill_code':target_kill_code}
-    )
-    assert response.status_code == 200
-
+    headers=headers = {'Authorization' : 'Bearer ' + players_info[getter_index]['access_token']}
     response=client.post(
+        '/player_access/got_target',
+        headers=headers,
+        json={'guessed_target_kill_code' : target_kill_code}
+    )
+
+    if is_winning_got:
+        assert response.status_code == 302
+    else:
+        assert response.status_code == 200
+
+    headers = {'Authorization' : 'Bearer ' + players_info[target_index]['access_token']}
+    response=client.get(
         '/player_access/remove_from_game',
-        json={'player_id':target_id}
+        headers=headers
     )
     assert response.status_code == 200
 
+    # make sure the target was killed and removed
     with app.app_context():
         assert get_db().execute(
             'SELECT * FROM players'
-            ' WHERE player_id = ?',
-            (target_id, )
+            ' WHERE player_first_name = ?',
+            (target_name['target_first_name'], )
         ).fetchone() is None
 
-    #find your new target
-    new_target_info=None
-    with app.app_context():
-        new_target_info = get_db().execute(
-            'SELECT target_first_name, target_last_name, target_id FROM players'
-            ' WHERE player_id = ?',
-            (getter_id,)
-        ).fetchone()
-
-    response = client.post(
-        '/player_access/request_target',
-        json={'player_id':getter_id}
-    )
-    assert response.status_code == 200
-    assert response.get_json()['target_first_name'] == new_target_info[0]
-    assert response.get_json()['target_last_name'] == new_target_info[1]
-
-    new_target_id = new_target_info[2]
-
-    return new_target_id
-
-def add_player_assertions(client, app, player_first_name, player_last_name,is_creator, game_code):
-    #get the target info so we can let them remove themselves from the game
-
-    response= client.post(
-        '/player_access/add_player',
-        json= {
-            'player_first_name':player_first_name,
-            'player_last_name': player_last_name,
-            'is_creator':is_creator,
-            'game_code':game_code
-        }
-    )
-
-    assert response.status_code  == 200
-    with app.app_context():
         assert get_db().execute(
-            'SELECT * FROM players'
-            ' WHERE player_first_name = ? AND player_last_name = ? AND game_code = ?',
-            (player_first_name, player_last_name, game_code)
-        ).fetchone() is not None
+            'SELECT target_first_name FROM players'
+            ' WHERE player_first_name = ?',
+            (players_info[getter_index]['player_first_name'], )
+        ).fetchone()[0] != target_name['target_first_name']
+
+    return target_index

@@ -74,6 +74,10 @@ def create_test_game(client, num_players, game_state):
             headers = headers
         )
 
+        assert start_hunt_response.status_code == 200 or start_hunt_response.status_code == 302
+
+    assert len(players_info) == num_players
+
     return players_info
 
 
@@ -90,6 +94,8 @@ def add_test_player(client, is_creator, game_code):
             'game_code' : game_code,
         }
     )
+
+    assert add_player_response.status_code == 200
 
     player_info=add_player_response.get_json()
 

@@ -24,7 +24,6 @@ def create_app(test_config=None):
     )
 
 
-
     if test_config is None:
         # load the instance config, if it exists, when not testing
         app.config.from_pyfile('config.py', silent=True)
@@ -49,6 +48,17 @@ def create_app(test_config=None):
     @app.route('/hello')
     def hello():
         return 'Hello, World!', 200
+
+    # sets up the custom returns for messed up tokens
+    @jwt.invalid_token_loader
+    def my_invalid_token_callback(expired_token):
+        token_type = expired_token['type']
+        return jsonify(internal_error(12)), 422
+
+    @jwt.unauthorized_loader
+    def my_unauthorized_loader_callback(expired_token):
+        return jsonify(internal_error(13)), 401
+
 
 
     #adds database to the app
@@ -87,7 +97,9 @@ def internal_error(error_id):
         8: jsonify({'message':'There are no more available game codes', 'error_id':8}),
         9: jsonify({'message':'You are not dead or the last player', 'error_id':9}),
         10: jsonify({'message':'Incorrect killcode', 'error_id':10}),
-        11: jsonify({'message':'The hunt hasn\'t started yet', 'error_id':11})
+        11: jsonify({'message':'The hunt hasn\'t started yet', 'error_id':11}),
+        12: jsonify({'message':'This JWT token is invalid', 'error_id':12}),
+        13: jsonify({'message':'Please supply a JWT token', 'error_id':13}),
     }
 
     return error_dict[error_id]
