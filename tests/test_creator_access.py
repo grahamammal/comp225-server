@@ -29,15 +29,15 @@ def test_create_game(client, game_name, game_rules, expected_error_id, expected_
         assert 1000<=json_data['game_code'] and json_data['game_code']<10000
 
 @pytest.mark.parametrize(
-    ('num_players', 'is_creator', 'expected_error_id', 'expected_status_code'),
+    ('num_players', 'is_creator', 'expected_won_game', 'expected_error_id', 'expected_status_code'),
     (
-        (10, True, None, 200), # the creator tries to start a 10 person hunt
-        (10, False, 6, 403), # a player other than the creator tries to start a 10 person hunt
-        (1, True, None, 302), # the creator tries to start a 1 person hunt
-        (None, False, 12, 422), # a player that doesn't exist tries to start a hunt
+        (10, True, False, None, 200), # the creator tries to start a 10 person hunt
+        (10, False, None, 6, 403), # a player other than the creator tries to start a 10 person hunt
+        (1, True, True, None, 200), # the creator tries to start a 1 person hunt
+        (None, False, None, 12, 422), # a player that doesn't exist tries to start a hunt
     )
 )
-def test_start_hunt(client, num_players, is_creator, expected_error_id, expected_status_code):
+def test_start_hunt(client, num_players, is_creator, expected_won_game, expected_error_id, expected_status_code):
     if num_players is None:
         headers=headers = {'Authorization' : 'Bearer ' + 'dyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1NTU2MjA3MTMsIm5iZiI6MTU1NTYyMDcxMywianRpIjoiZTc1YTU5MzEtODU2Yy00OTcwLThiZmItNDRhMWU2OTI3OGJiIiwiZXhwIjoxNTU1NjIxNjEzLCJpZGVudGl0eSI6NSwiZnJlc2giOmZhbHNlLCJ0eXBlIjoiYWNjZXNzIn0.4lpagzD_gVJqWWXW37CkzuccHYoMtjVOQ7j08SXbb_0'}
         response=client.get(
@@ -66,6 +66,7 @@ def test_start_hunt(client, num_players, is_creator, expected_error_id, expected
 
     assert response.status_code==expected_status_code
     assert response.get_json().get('error_id') == expected_error_id
+    assert response.get_json().get('won') == expected_won_game
 
 def generate_player(client, is_creator):
 

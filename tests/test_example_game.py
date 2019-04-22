@@ -145,10 +145,9 @@ def player_got_target(app, client, players_info, getter_index, is_winning_got):
         json={'guessed_target_kill_code' : target_kill_code}
     )
 
-    if is_winning_got:
-        assert response.status_code == 302
-    else:
-        assert response.status_code == 200
+    assert response.status_code == 200
+
+    assert response.get_json().get('win') == is_winning_got
 
     headers = {'Authorization' : 'Bearer ' + players_info[target_index]['access_token']}
     response=client.get(

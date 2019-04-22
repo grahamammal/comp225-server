@@ -192,7 +192,7 @@
 }
 </code></pre>
 <h3 id="got-target">Got Target</h3>
-<p>This endpoint remove your target from the game and provide you with a new one. If you got the last other person, it will redirect to /won_game</p>
+<p>This endpoint remove your target from the game and provide you with a new one. Will return <code>win: True</code> if the game is won,  <code>win: False</code> otherwise.</p>
 <h4 id="http-request-1">HTTP Request</h4>
 <hr>
 <pre><code>POST http://&lt;localhost&gt;/player_access/got_target
@@ -225,25 +225,13 @@
 </tr>
 </tbody>
 </table><h4 id="return-value-1">Return Value</h4>
-<p>Status Code 302 if you won the game, 200 otherwise.</p>
-<h3 id="won-game">Won Game</h3>
-<p>This endpoint tells you you won the game!</p>
-<h4 id="http-request-2">HTTP Request</h4>
-<hr>
-<pre><code>GET http://&lt;localhost&gt;/player_access/won_game
-</code></pre>
-<h4 id="url-parameters-2">URL Parameters</h4>
-<hr>
-<p>None</p>
-<h4 id="return-value-2">Return Value</h4>
-<hr>
 <pre><code>{
-	"won_game": true
+	"win": true
 }
 </code></pre>
 <h3 id="add-player">Add Player</h3>
 <p>This endpoint will add a player to a game.</p>
-<h4 id="http-request-3">HTTP Request</h4>
+<h4 id="http-request-2">HTTP Request</h4>
 <hr>
 <pre><code>POST http://&lt;localhost&gt;/player_access/add_player  
     {
@@ -253,7 +241,7 @@
         "game_code": 9999
     }
 </code></pre>
-<h4 id="url-parameters-3">URL Parameters</h4>
+<h4 id="url-parameters-2">URL Parameters</h4>
 <hr>
 
 <table>
@@ -286,7 +274,7 @@
 <td>The 4 digit code of the game the player is joining</td>
 </tr>
 </tbody>
-</table><h4 id="return-value-3">Return Value</h4>
+</table><h4 id="return-value-2">Return Value</h4>
 <hr>
 <pre><code>{
     "access_token" : "dyJ0eXAiOiJKV1Q..."
@@ -295,9 +283,41 @@
 </code></pre>
 <h3 id="request-target">Request Target</h3>
 <p>This endpoint will request the target of the player who navigated here.</p>
-<h4 id="http-request-4">HTTP Request</h4>
+<h4 id="http-request-3">HTTP Request</h4>
 <hr>
 <pre><code>GET http://&lt;localhost&gt;/player_access/request_target
+	headers: Authorization: "Bearer dyJ0eXAiOiJKV1Q..."
+</code></pre>
+<h4 id="url-parameters-3">URL Parameters</h4>
+<hr>
+
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>player_id</td>
+<td>None</td>
+<td>Your player ID</td>
+</tr>
+</tbody>
+</table><h4 id="return-value-3">Return Value</h4>
+<hr>
+<pre><code>{
+    "target_first_name":"example"
+    "target_last_name":"example"
+}
+</code></pre>
+<h3 id="request-kill-code">Request Kill Code</h3>
+<p>This endpoint will return your kill code.</p>
+<h4 id="http-request-4">HTTP Request</h4>
+<hr>
+<pre><code>GET http://&lt;localhost&gt;/player_access/request_kill_code
 	headers: Authorization: "Bearer dyJ0eXAiOiJKV1Q..."
 </code></pre>
 <h4 id="url-parameters-4">URL Parameters</h4>
@@ -321,15 +341,14 @@
 </table><h4 id="return-value-4">Return Value</h4>
 <hr>
 <pre><code>{
-    "target_first_name":"example"
-    "target_last_name":"example"
+    "player_kill_code" : 1234
 }
 </code></pre>
-<h3 id="request-kill-code">Request Kill Code</h3>
-<p>This endpoint will return your kill code.</p>
+<h3 id="remove-from-game">Remove From Game</h3>
+<p>Remove yourself from the game after you’ve died.</p>
 <h4 id="http-request-5">HTTP Request</h4>
 <hr>
-<pre><code>GET http://&lt;localhost&gt;/player_access/request_kill_code
+<pre><code>GET http://&lt;localhost&gt;/player_access/remove_from_game
 	headers: Authorization: "Bearer dyJ0eXAiOiJKV1Q..."
 </code></pre>
 <h4 id="url-parameters-5">URL Parameters</h4>
@@ -352,42 +371,11 @@
 </tbody>
 </table><h4 id="return-value-5">Return Value</h4>
 <hr>
-<pre><code>{
-    "player_kill_code" : 1234
-}
-</code></pre>
-<h3 id="remove-from-game">Remove From Game</h3>
-<p>Remove yourself from the game after you’ve died.</p>
-<h4 id="http-request-6">HTTP Request</h4>
-<hr>
-<pre><code>GET http://&lt;localhost&gt;/player_access/remove_from_game
-	headers: Authorization: "Bearer dyJ0eXAiOiJKV1Q..."
-</code></pre>
-<h4 id="url-parameters-6">URL Parameters</h4>
-<hr>
-
-<table>
-<thead>
-<tr>
-<th>Parameter</th>
-<th>Default</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>player_id</td>
-<td>None</td>
-<td>Your player ID</td>
-</tr>
-</tbody>
-</table><h4 id="return-value-6">Return Value</h4>
-<hr>
 <p>None</p>
 <h2 id="game-creator-requests">Game Creator Requests</h2>
 <h3 id="create-game">Create Game</h3>
 <p>This endpoint will create the game with the specified name and rules.</p>
-<h4 id="http-request-7">HTTP Request</h4>
+<h4 id="http-request-6">HTTP Request</h4>
 <hr>
 <pre><code>POST http://&lt;localhost&gt;/creator_access/create_game
     {
@@ -395,7 +383,7 @@
         "game_rules":"example rules"
     }
 </code></pre>
-<h4 id="url-parameters-7">URL Parameters</h4>
+<h4 id="url-parameters-6">URL Parameters</h4>
 <hr>
 
 <table>
@@ -418,18 +406,49 @@
 <td>The rules of the game</td>
 </tr>
 </tbody>
-</table><h4 id="return-value-7">Return Value</h4>
+</table><h4 id="return-value-6">Return Value</h4>
 <hr>
 <pre><code>{
     "game_code": 9999
 }
 </code></pre>
 <h3 id="start-hunt">Start Hunt</h3>
-<p>This endpoint will start hunting phase of the game of the game creator. This request can only be made by a game creator.</p>
-<h4 id="http-request-8">HTTP Request</h4>
+<p>This endpoint will start hunting phase of the game of the game creator. This request can only be made by a game creator. Will return <code>win: True</code> if the game is won,  <code>win: False</code> otherwise.</p>
+<h4 id="http-request-7">HTTP Request</h4>
 <hr>
 <pre><code>GET http://&lt;localhost&gt;/creator_access/start_hunt
  	headers: Authorization: "Bearer dyJ0eXAiOiJKV1Q..."
+</code></pre>
+<h4 id="url-parameters-7">URL Parameters</h4>
+<hr>
+
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>player_id</td>
+<td>None</td>
+<td>Your player ID</td>
+</tr>
+</tbody>
+</table><h5 id="return-value-7">Return Value</h5>
+<hr>
+<pre><code>{
+	"win": true
+}
+</code></pre>
+<h3 id="player-list">Player List</h3>
+<p>This endpoint will return a list of the names of the players in the game.</p>
+<h4 id="http-request-8">HTTP Request</h4>
+<hr>
+<pre><code>GET http://&lt;localhost&gt;/creator_access/player_list
+	headers: Authorization: "Bearer dyJ0eXAiOiJKV1Q..."
 </code></pre>
 <h4 id="url-parameters-8">URL Parameters</h4>
 <hr>
@@ -451,12 +470,24 @@
 </tbody>
 </table><h5 id="return-value-8">Return Value</h5>
 <hr>
-<p>None</p>
-<h3 id="player-list">Player List</h3>
-<p>This endpoint will return a list of the names of the players in the game.</p>
+<pre><code>"players":
+[
+    {
+        "player_first_name": "test1"
+        "player_last_name": "test1"
+    },
+    {
+        "player_first_name": "test2"
+        "player_last_name": "test2"
+    }
+]
+</code></pre>
+<h2 id="status-requests">Status Requests</h2>
+<h3 id="is-alive">Is Alive</h3>
+<p>This endpoint will tell the player asking if they are alive or not</p>
 <h4 id="http-request-9">HTTP Request</h4>
 <hr>
-<pre><code>GET http://&lt;localhost&gt;/creator_access/player_list
+<pre><code>GET http://&lt;localhost&gt;/status_access/is_alive
 	headers: Authorization: "Bearer dyJ0eXAiOiJKV1Q..."
 </code></pre>
 <h4 id="url-parameters-9">URL Parameters</h4>
@@ -477,47 +508,7 @@
 <td>Your player ID</td>
 </tr>
 </tbody>
-</table><h5 id="return-value-9">Return Value</h5>
-<hr>
-<pre><code>"players":
-[
-    {
-        "player_first_name": "test1"
-        "player_last_name": "test1"
-    },
-    {
-        "player_first_name": "test2"
-        "player_last_name": "test2"
-    }
-]
-</code></pre>
-<h2 id="status-requests">Status Requests</h2>
-<h3 id="is-alive">Is Alive</h3>
-<p>This endpoint will tell the player asking if they are alive or not</p>
-<h4 id="http-request-10">HTTP Request</h4>
-<hr>
-<pre><code>GET http://&lt;localhost&gt;/status_access/is_alive
-	headers: Authorization: "Bearer dyJ0eXAiOiJKV1Q..."
-</code></pre>
-<h4 id="url-parameters-10">URL Parameters</h4>
-<hr>
-
-<table>
-<thead>
-<tr>
-<th>Parameter</th>
-<th>Default</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>player_id</td>
-<td>None</td>
-<td>Your player ID</td>
-</tr>
-</tbody>
-</table><h4 id="return-value-10">Return Value</h4>
+</table><h4 id="return-value-9">Return Value</h4>
 <hr>
 <pre><code>{
     "is_alive": 1
@@ -525,14 +516,14 @@
 </code></pre>
 <h3 id="is-game-started">Is Game Started</h3>
 <p>This endpoint will return whether the specified game has started or not</p>
-<h4 id="http-request-11">HTTP Request</h4>
+<h4 id="http-request-10">HTTP Request</h4>
 <hr>
 <pre><code>POST http://&lt;localhost&gt;/status_access/is_game_started
     {
         "game_code": 9999
     }
 </code></pre>
-<h4 id="url-parameters-11">URL Parameters</h4>
+<h4 id="url-parameters-10">URL Parameters</h4>
 <hr>
 
 <table>
@@ -550,7 +541,7 @@
 <td>The 4 digit code of the game the player is in</td>
 </tr>
 </tbody>
-</table><h4 id="return-value-11">Return Value</h4>
+</table><h4 id="return-value-10">Return Value</h4>
 <hr>
 <pre><code>{
     "game_state": 1
@@ -560,7 +551,7 @@
 <p><em>Note: These requests should only be used for testing, and not used in the actual app</em></p>
 <h3 id="get-player">Get Player</h3>
 <p>This endpoint will get all the information about the specified player.</p>
-<h4 id="http-request-12">HTTP Request</h4>
+<h4 id="http-request-11">HTTP Request</h4>
 <hr>
 <pre><code>POST http://&lt;localhost&gt;/test_access/get_player
     {
@@ -569,7 +560,7 @@
         "game_code": 9999
     }
 </code></pre>
-<h4 id="url-parameters-12">URL Parameters</h4>
+<h4 id="url-parameters-11">URL Parameters</h4>
 <hr>
 
 <table>
@@ -597,7 +588,7 @@
 <td>The 4 digit code of the game the player is in</td>
 </tr>
 </tbody>
-</table><h4 id="return-value-12">Return Value</h4>
+</table><h4 id="return-value-11">Return Value</h4>
 <hr>
 <pre><code>{
     "player_id": 0
@@ -614,14 +605,14 @@
 </code></pre>
 <h3 id="get-all-players">Get All Players</h3>
 <p>This endpoint will get all the information about the all the players on the server.</p>
-<h4 id="http-request-13">HTTP Request</h4>
+<h4 id="http-request-12">HTTP Request</h4>
 <hr>
 <pre><code>GET http://&lt;localhost&gt;/test_access/get_all_players
 </code></pre>
-<h4 id="url-parameters-13">URL Parameters</h4>
+<h4 id="url-parameters-12">URL Parameters</h4>
 <hr>
 <p>None</p>
-<h4 id="return-value-13">Return Value</h4>
+<h4 id="return-value-12">Return Value</h4>
 <hr>
 <p>A JSON list, where each entry contains the following:</p>
 <pre><code>{
@@ -639,14 +630,14 @@
 </code></pre>
 <h3 id="get-game">Get Game</h3>
 <p>This endpoint will get all the information about the specified game.</p>
-<h4 id="http-request-14">HTTP Request</h4>
+<h4 id="http-request-13">HTTP Request</h4>
 <hr>
 <pre><code>POST http://&lt;localhost&gt;/test_access/get_game
     {
         "game_code": 9999
     }
 </code></pre>
-<h4 id="url-parameters-14">URL Parameters</h4>
+<h4 id="url-parameters-13">URL Parameters</h4>
 <hr>
 
 <table>
@@ -664,7 +655,7 @@
 <td>The 4 digit code of the game you want the info of</td>
 </tr>
 </tbody>
-</table><h4 id="return-value-14">Return Value</h4>
+</table><h4 id="return-value-13">Return Value</h4>
 <hr>
 <pre><code>{
     "game_id": 0
@@ -676,17 +667,17 @@
 </code></pre>
 <h3 id="get-all-games">Get All Games</h3>
 <p>This endpoint will get all the information about all the games on the server.</p>
-<h4 id="http-request-15">HTTP Request</h4>
+<h4 id="http-request-14">HTTP Request</h4>
 <hr>
 <pre><code>POST http://&lt;localhost&gt;/test_access/get_all_games
     {
         "game_code": 9999
     }
 </code></pre>
-<h4 id="url-parameters-15">URL Parameters</h4>
+<h4 id="url-parameters-14">URL Parameters</h4>
 <hr>
 <p>None</p>
-<h4 id="return-value-15">Return Value</h4>
+<h4 id="return-value-14">Return Value</h4>
 <hr>
 <p>A JSON list, where each entry contains the following:</p>
 <pre><code>{

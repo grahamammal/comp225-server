@@ -37,7 +37,7 @@ def test_add_player(client,
     ('num_players', 'game_state', 'player_is_alive', 'guessed_correct', 'expected_error_id','expected_status_code'),
     (
         (3, 0, True, None, 5, 400), # player has no target
-        (2, 1, True, True, None, 302), # player wins
+        (2, 1, True, True, None, 200), # player wins
         (3, 1, True, True, None, 200), # player got target but didn't win
         (3, 1, False, None, 9, 400), # player is dead
         (3, 1, True, False, 10, 400), # player gave wrong kill code
@@ -100,9 +100,15 @@ def test_got_target(app, client, num_players, game_state, player_is_alive, guess
                 headers=headers,
                 json={'guessed_target_kill_code' : target_kill_code}
             )
+        if num_players == 2:
+            assert response.get_json().get('win')
+        else:
+            assert not response.get_json().get('win')
 
     assert response.status_code==expected_status_code
     assert response.get_json().get('error_id')==expected_error_id
+
+
 
 def test_won_game(client):
     response=client.get('/player_access/won_game')

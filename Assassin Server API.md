@@ -111,7 +111,8 @@ POST http://<localhost>/player_access/get_game_info
 ```
 ### Got Target
 
-This endpoint remove your target from the game and provide you with a new one. If you got the last other person, it will redirect to /won_game
+This endpoint remove your target from the game and provide you with a new one. Will return ```win: True``` if the game is won,  ```win: False``` otherwise. 
+
 
 #### HTTP Request
 ---
@@ -131,29 +132,12 @@ POST http://<localhost>/player_access/got_target
 | guessed\_target\_kill\_code | None | The kill code of the player you got |
 
 #### Return Value
-Status Code 302 if you won the game, 200 otherwise.
-
-### Won Game
-
-This endpoint tells you you won the game!
-
-#### HTTP Request
----
-```
-GET http://<localhost>/player_access/won_game
-```
-
-#### URL Parameters
----
-None
-
-#### Return Value
----
 ```
 {
-	"won_game": true
+	"win": true
 }
 ```
+
 
 ### Add Player
 
@@ -297,7 +281,7 @@ POST http://<localhost>/creator_access/create_game
 
 ### Start Hunt
 
-This endpoint will start hunting phase of the game of the game creator. This request can only be made by a game creator.
+This endpoint will start hunting phase of the game of the game creator. This request can only be made by a game creator. Will return ```win: True``` if the game is won,  ```win: False``` otherwise. 
 
 #### HTTP Request
 ---
@@ -314,7 +298,11 @@ GET http://<localhost>/creator_access/start_hunt
 
 ##### Return Value
 ---
-None
+```
+{
+	"win": true
+}
+```
 
 ### Player List
 
