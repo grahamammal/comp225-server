@@ -170,10 +170,6 @@ def got_target():
 
     return jsonify({"win": False}), 200
 
-@bp.route('/won_game')
-def won_game():
-    return jsonify({"win": True})
-
 
 @bp.route('/get_game_info',  methods=['POST'])
 def get_game_info():

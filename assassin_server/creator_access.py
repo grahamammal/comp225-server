@@ -9,7 +9,6 @@ from flask_jwt_extended import (
 )
 
 from assassin_server.db import get_db, row_to_dict, table_to_dict
-from assassin_server.player_access import won_game
 from assassin_server.__init__ import internal_error
 
 bp = Blueprint('creator_access', __name__, url_prefix='/creator_access')

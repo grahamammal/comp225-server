@@ -110,10 +110,6 @@ def test_got_target(app, client, num_players, game_state, player_is_alive, guess
 
 
 
-def test_won_game(client):
-    response=client.get('/player_access/won_game')
-    assert response.status_code==200
-
 @pytest.mark.parametrize(
     ('game_code', 'expected_rules', 'expected_name', 'expected_status_code'),
     (
