@@ -1,18 +1,13 @@
 import os
 import redis
 
-from flask import Flask, session, abort, render_template, jsonify
-from flask_session import Session
-from datetime import timedelta
+from flask import Flask, jsonify
 
 from flask_jwt_extended import (
     JWTManager, jwt_required, create_access_token,
     get_jwt_identity
 )
 
-SESSION_TYPE = 'redis'
-PERMANANT_SESSION_LIFETIME = timedelta(days=365)
-sess = Session()
 
 def create_app(test_config=None):
     """Creates app with specified config"""
@@ -20,7 +15,6 @@ def create_app(test_config=None):
     app.config.from_mapping(
         SECRET_KEY=b'_5#y2L"F4Q8z\n\xec]/',
         DATABASE=os.path.join(app.instance_path, 'assassin_server.sqlite'),
-        SESSION_TYPE='filesystem'
     )
 
 
@@ -40,8 +34,6 @@ def create_app(test_config=None):
 
     app.config['JWT_ACCESS_TOKEN_EXPIRES']=False
 
-    #intialises session on server
-    sess.init_app(app)
     #initalises json web tokens
     jwt = JWTManager(app)
     # a simple page that says hello

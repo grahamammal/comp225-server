@@ -1,6 +1,6 @@
 import functools, random
 from flask import (
-    Blueprint, flash, g, redirect, render_template, request, session, url_for, jsonify, abort, redirect, url_for
+    Blueprint, g, request, url_for, jsonify
 )
 
 from flask_jwt_extended import (
