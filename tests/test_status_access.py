@@ -53,7 +53,7 @@ def test_is_alive(app, client, expected_is_alive, expected_error_id, expected_st
         (1003, 2, None, 200)
     )
 )
-def test_is_game_started(client, game_code, expected_game_state, expected_error_id, expected_status_code):
+def test_game_state(client, game_code, expected_game_state, expected_error_id, expected_status_code):
     response=client.post(
         '/status_access/game_state',
         json={

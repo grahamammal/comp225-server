@@ -32,6 +32,10 @@ _Jacob Weightman_
       - [HTTP Request](#http-request-6)
       - [URL Parameters](#url-parameters-6)
       - [Return Value](#return-value-6)
+    + [Quit Game](#get-game-info)
+      - [HTTP Request](#http-request)
+      - [URL Parameters](#url-parameters)
+      - [Return Value](#return-value)
   * [Game Creator Requests](#game-creator-requests)
     + [Create Game](#create-game)
       - [HTTP Request](#http-request-7)
@@ -50,7 +54,7 @@ _Jacob Weightman_
       - [HTTP Request](#http-request-10)
       - [URL Parameters](#url-parameters-10)
       - [Return Value](#return-value-10)
-    + [Is Game Started](#is-game-started)
+    + [Game State](#is-game-started)
       - [HTTP Request](#http-request-11)
       - [URL Parameters](#url-parameters-11)
       - [Return Value](#return-value-11)
@@ -107,7 +111,7 @@ POST http://<localhost>/player_access/get_game_info
 ```
 ### Got Target
 
-This endpoint remove your target from the game and provide you with a new one. Will return ```win: True``` if the game is won,  ```win: False``` otherwise. 
+This endpoint remove your target from the game and provide you with a new one. Will return ```win: True``` if the game is won,  ```win: False``` otherwise.
 
 
 #### HTTP Request
@@ -124,7 +128,6 @@ POST http://<localhost>/player_access/got_target
 ---
 | Parameter | Default | Description
 | ------ | ------ | ------|
-| player\_id | None | Your player ID |
 | guessed\_target\_kill\_code | None | The kill code of the player you got |
 
 #### Return Value
@@ -182,9 +185,8 @@ GET http://<localhost>/player_access/request_target
 
 #### URL Parameters
 ---
-| Parameter | Default | Description
-| ------ | ------ | ------|
-| player\_id | None | Your player ID |
+
+None
 
 #### Return Value
 ---
@@ -196,7 +198,7 @@ GET http://<localhost>/player_access/request_target
 }
 ```
 
-### Request Kill Code 
+### Request Kill Code
 
 This endpoint will return your kill code.
 
@@ -209,9 +211,8 @@ GET http://<localhost>/player_access/request_kill_code
 
 #### URL Parameters
 ---
-| Parameter | Default | Description
-| ------ | ------ | ------|
-| player\_id | None | Your player ID |
+
+None
 
 #### Return Value
 ---
@@ -235,9 +236,29 @@ GET http://<localhost>/player_access/remove_from_game
 
 #### URL Parameters
 ---
-| Parameter | Default | Description
-| ------ | ------ | ------|
-| player\_id | None | Your player ID |
+
+None
+
+#### Return Value
+---
+
+None
+
+### Quit Game
+
+Allows a player to quit the game. This will remove the player, and if the game is started and this was the second to last player, will set the game state to 2 (meaning the game is won)
+
+#### HTTP Request
+---
+```
+GET http://<localhost>/player_access/quit_game
+	headers: Authorization: "Bearer dyJ0eXAiOiJKV1Q..."
+```
+
+#### URL Parameters
+---
+
+None
 
 #### Return Value
 ---
@@ -277,7 +298,7 @@ POST http://<localhost>/creator_access/create_game
 
 ### Start Hunt
 
-This endpoint will start hunting phase of the game of the game creator. This request can only be made by a game creator. Will return ```win: True``` if the game is won,  ```win: False``` otherwise. 
+This endpoint will start hunting phase of the game of the game creator. This request can only be made by a game creator. Will return ```win: True``` if the game is won,  ```win: False``` otherwise.
 
 #### HTTP Request
 ---
@@ -288,9 +309,8 @@ GET http://<localhost>/creator_access/start_hunt
 
 #### URL Parameters
 ---
-| Parameter | Default | Description
-| ------ | ------ | ------|
-| player\_id | None | Your player ID |
+
+None
 
 ##### Return Value
 ---
@@ -313,9 +333,8 @@ GET http://<localhost>/creator_access/player_list
 
 #### URL Parameters
 ---
-| Parameter | Default | Description
-| ------ | ------ | ------|
-| player\_id | None | Your player ID |
+
+None
 
 ##### Return Value
 ---
@@ -348,9 +367,8 @@ GET http://<localhost>/status_access/is_alive
 
 #### URL Parameters
 ---
-| Parameter | Default | Description
-| ------ | ------ | ------|
-| player\_id | None | Your player ID |
+
+None
 
 #### Return Value
 ---
@@ -360,14 +378,14 @@ GET http://<localhost>/status_access/is_alive
 }
 ```
 
-### Is Game Started
+### Game State
 
-This endpoint will return whether the specified game has started or not
+This endpoint will return whether the specified game hasn't started (0) has started (1), or was won (2)
 
 #### HTTP Request
 ---
 ```
-POST http://<localhost>/status_access/is_game_started
+POST http://<localhost>/status_access/game_state
     {
         "game_code": 9999
     }
@@ -530,4 +548,3 @@ The assassin-server API uses the following error codes:
 | 400 | Bad Request -- Your request was bad, maybe there is no such player or game, a player with that name already exists, etc. Check the server code to find out why. |
 | 403 | Forbidden -- You don't have the privileges to make that request |
 | 500 | Internal Server Error -- Something went wrong with the server! Oh no!!
-
