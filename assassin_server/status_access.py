@@ -32,19 +32,19 @@ def is_alive():
 
     return jsonify(row_to_dict(is_alive))
 
-@bp.route('/is_game_started', methods=['POST'])
+@bp.route('/game_state', methods=['POST'])
 def is_game_started():
     content=request.get_json()
     game_code=content["game_code"]
 
     db=get_db()
-    is_game_started=db.execute(
+    game_state=db.execute(
         'SELECT game_state FROM games'
         ' WHERE game_code=?',
         (game_code,)
     ).fetchone()
 
-    if is_game_started is None:
+    if game_state is None:
         return(internal_error(5), 400)
 
-    return jsonify(row_to_dict(is_game_started))
+    return jsonify(row_to_dict(game_state))

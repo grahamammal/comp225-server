@@ -171,3 +171,85 @@ def player_got_target(app, client, players_info, getter_index, is_winning_got):
         ).fetchone()[0] != target_name['target_first_name']
 
     return target_index
+
+
+# In this game, the other player quits from a 2 person game
+def test_quitter_game(app, client):
+    players_info = create_test_game(client, 2, 1)
+
+    # we'll find the game code
+    game_code = None
+    with app.app_context():
+        game_code = get_db().execute(
+            'SELECT game_code FROM players'
+            ' WHERE player_first_name = ?',
+            (players_info[0]['player_first_name'], )
+        ).fetchone()[0]
+
+    # we'll make the creator quit
+    headers = {'Authorization' : 'Bearer ' + players_info[0]['access_token']}
+    response=client.get(
+        '/player_access/quit_game',
+        headers=headers
+    )
+    assert response.status_code == 200
+
+    # make sure they're gone
+    with app.app_context():
+        assert get_db().execute(
+            'SELECT * FROM players'
+            ' WHERE player_first_name = ?',
+            (players_info[0]['player_first_name'], )
+        ).fetchone() is None
+
+    assert response.status_code == 200
+
+    # then the other player will check the game status
+    response = client.post(
+        '/status_access/game_state',
+        json={
+        'game_code':game_code
+        }
+    )
+    assert response.status_code == 200
+
+
+    assert response.get_json().get('game_state') == 2
+
+    # make sure there's 1 player left
+    with app.app_context():
+        num_players_alive = len(table_to_dict(get_db().execute(
+            'SELECT * FROM players'
+            ' WHERE game_code = ?',
+            (game_code, )
+        ).fetchall()))
+
+    assert num_players_alive == 1
+
+    # now the winner asks to be removed from the game
+    headers = {'Authorization' : 'Bearer ' + players_info[1]['access_token']}
+    response=client.get(
+        '/player_access/remove_from_game',
+        headers=headers
+    )
+    assert response.status_code == 200
+
+    # make sure both the winner and the game are deleted
+    with app.app_context():
+        assert get_db().execute(
+            'SELECT * FROM players'
+            ' WHERE player_first_name = ?',
+            (players_info[1]['player_first_name'], )
+        ).fetchone() is None
+
+        assert get_db().execute(
+            'SELECT * FROM players'
+            ' WHERE game_code = ?',
+            (game_code, )
+        ).fetchone() is None
+
+        assert get_db().execute(
+            'SELECT * FROM games'
+            ' WHERE game_code = ?',
+            (game_code, )
+        ).fetchone() is None

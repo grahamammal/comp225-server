@@ -60,5 +60,5 @@ VALUES
   ("test_game", "no rules dweeb", 1000, 1),
   ("player_access_test_game", null, 1001, 0),
   ("player_access_test_got", "nope", 1002, 1),
-  ("player_access_test_remove", "nope", 1003, 1),
+  ("player_access_test_game_state", "nope", 1003, 2),
   ("another_test_game", "still no rules dweeb", 9999, 0);

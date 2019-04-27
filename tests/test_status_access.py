@@ -45,16 +45,17 @@ def test_is_alive(app, client, expected_is_alive, expected_error_id, expected_st
 
 
 @pytest.mark.parametrize(
-    ('game_code', 'expected_is_game_state', 'expected_error_id', 'expected_status_code'),
+    ('game_code', 'expected_game_state', 'expected_error_id', 'expected_status_code'),
     (
         (1000, 1, None, 200),
         (1001, 0, None, 200),
-        (5000, None, 5, 400)
+        (5000, None, 5, 400),
+        (1003, 2, None, 200)
     )
 )
-def test_is_game_started(client, game_code, expected_is_game_state, expected_error_id, expected_status_code):
+def test_is_game_started(client, game_code, expected_game_state, expected_error_id, expected_status_code):
     response=client.post(
-        '/status_access/is_game_started',
+        '/status_access/game_state',
         json={
               'game_code':game_code
         }
@@ -65,4 +66,4 @@ def test_is_game_started(client, game_code, expected_is_game_state, expected_err
     if expected_error_id is not None:
         assert response.get_json()['error_id']==expected_error_id
     else:
-        assert response.get_json()['game_state']==expected_is_game_state
+        assert response.get_json()['game_state']==expected_game_state

@@ -241,3 +241,81 @@ def test_remove_from_game(app, client, num_players, is_alive, expected_error_id,
 
     assert response.status_code == expected_status_code
     assert response.get_json().get('error_id') == expected_error_id
+
+@pytest.mark.parametrize(
+    ('num_players', 'starting_game_state', 'expected_game_state', 'expected_error_id', 'expected_status_code'),
+    (
+        (3, 1, 1, None, 200), # the player quits and targets should be reassigned
+        (2, 1, 2, None, 200), # the player quits and there is only one player left, meaning they win
+        (3, 0, 0, None, 200), # the player quits before the game starts
+        (None, None, None, 12, 422), # the player doesn't exist
+    )
+)
+def test_quit_game(app, client, num_players, starting_game_state, expected_game_state, expected_error_id, expected_status_code):
+    if num_players is None:
+        # send fake info if the player doesn't exist
+        headers=headers = {'Authorization' : 'Bearer ' + 'dyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1NTU2MjA3MTMsIm5iZiI6MTU1NTYyMDcxMywianRpIjoiZTc1YTU5MzEtODU2Yy00OTcwLThiZmItNDRhMWU2OTI3OGJiIiwiZXhwIjoxNTU1NjIxNjEzLCJpZGVudGl0eSI6NSwiZnJlc2giOmZhbHNlLCJ0eXBlIjoiYWNjZXNzIn0.4lpagzD_gVJqWWXW37CkzuccHYoMtjVOQ7j08SXbb_0'}
+        response=client.get(
+            '/player_access/request_kill_code',
+            headers=headers
+        )
+
+    else:
+        players_info = create_test_game(client, num_players, starting_game_state)
+
+        target_id = None
+        game_code = None
+        player_targeting_quitter_id = None
+
+        with app.app_context():
+            game_code = get_db().execute(
+                'SELECT game_code FROM players'
+                ' WHERE player_first_name = ? AND player_last_name = ?',
+                (players_info[0]['player_first_name'], players_info[0]['player_last_name'])
+            ).fetchone()[0]
+
+        if starting_game_state == 1:
+            with app.app_context():
+                target_id=get_db().execute(
+                    'SELECT target_id FROM players'
+                    ' WHERE player_first_name = ? AND player_last_name = ?',
+                    (players_info[0]['player_first_name'], players_info[0]['player_last_name'])
+                ).fetchone()[0]
+
+                player_targeting_quitter_id = get_db().execute(
+                    'SELECT player_id FROM players'
+                    ' WHERE target_first_name = ? AND target_last_name = ?',
+                    (players_info[0]['player_first_name'], players_info[0]['player_last_name'])
+                ).fetchone()[0]
+
+
+
+        headers = {'Authorization' : 'Bearer ' + players_info[0]['access_token']}
+        response=client.get(
+            '/player_access/quit_game',
+            headers=headers
+        )
+
+    assert response.status_code == expected_status_code
+    assert response.get_json().get('error_id') == expected_error_id
+
+    if num_players is not None:
+        with app.app_context():
+            assert get_db().execute(
+                'SELECT * FROM players'
+                ' WHERE player_first_name = ? AND player_last_name = ?',
+                (players_info[0]['player_first_name'], players_info[0]['player_last_name'])
+            ).fetchone() is None
+
+            assert get_db().execute(
+                'SELECT game_state FROM games'
+                ' WHERE game_code = ?',
+                (game_code, )
+            ).fetchone()[0] == expected_game_state
+
+            if starting_game_state == 1:
+                  assert get_db().execute(
+                      'SELECT target_id FROM players'
+                      ' WHERE player_id = ?',
+                      (player_targeting_quitter_id, )
+                  ).fetchone()[0] ==  target_id
