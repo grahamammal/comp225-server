@@ -137,7 +137,7 @@ def got_target():
         (target_id, )
     ).fetchone()[0]
 
-    if guessed_target_kill_code != target_kill_code:
+    if str(guessed_target_kill_code) != str(target_kill_code):
         return(internal_error(10), 400)
 
     # retrieve the target of your target
