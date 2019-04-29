@@ -9,10 +9,9 @@ _Jacob Weightman_
 - [Assassin Server API Docs](#assassin-server-api-docs)
   * [Player Requests](#player-requests)
     + [Get Game Info](#get-game-info)
-      - [HTTP Request](#httprequest)
+      - [HTTP Request](#http-request)
       - [URL Parameters](#url-parameters)
       - [Return Value](#return-value)
-      - [Fun](#return-value)
     + [Got Target](#got-target)
       - [HTTP Request](#http-request-1)
       - [URL Parameters](#url-parameters-1)
@@ -550,5 +549,6 @@ The assassin-server API uses the following error codes:
 | 403 | Forbidden -- You don't have the privileges to make that request |
 | 500 | Internal Server Error -- Something went wrong with the server! Oh no!!
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTE2MDQ4ODk3NTBdfQ==
+eyJoaXN0b3J5IjpbLTExMDY0MTA2NjksLTE2MDQ4ODk3NTBdfQ
+==
 -->
