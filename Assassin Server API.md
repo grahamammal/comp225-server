@@ -12,6 +12,7 @@ _Jacob Weightman_
       - [HTTP Request](#httprequest)
       - [URL Parameters](#url-parameters)
       - [Return Value](#return-value)
+      - [Fun](#return-value)
     + [Got Target](#got-target)
       - [HTTP Request](#http-request-1)
       - [URL Parameters](#url-parameters-1)
@@ -549,5 +550,5 @@ The assassin-server API uses the following error codes:
 | 403 | Forbidden -- You don't have the privileges to make that request |
 | 500 | Internal Server Error -- Something went wrong with the server! Oh no!!
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMTcyNTM3NTA4OF19
+eyJoaXN0b3J5IjpbLTE2MDQ4ODk3NTBdfQ==
 -->
