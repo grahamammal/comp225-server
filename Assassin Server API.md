@@ -9,7 +9,7 @@ _Jacob Weightman_
 - [Assassin Server API Docs](#assassin-server-api-docs)
   * [Player Requests](#player-requests)
     + [Get Game Info](#get-game-info)
-      - [HTTP Request](#http-request)
+      - [HTTP Request](#httprequest)
       - [URL Parameters](#url-parameters)
       - [Return Value](#return-value)
     + [Got Target](#got-target)
@@ -548,3 +548,6 @@ The assassin-server API uses the following error codes:
 | 400 | Bad Request -- Your request was bad, maybe there is no such player or game, a player with that name already exists, etc. Check the server code to find out why. |
 | 403 | Forbidden -- You don't have the privileges to make that request |
 | 500 | Internal Server Error -- Something went wrong with the server! Oh no!!
+<!--stackedit_data:
+eyJoaXN0b3J5IjpbMTcyNTM3NTA4OF19
+-->
