@@ -66,7 +66,7 @@ def test_start_hunt(client, num_players, is_creator, expected_won_game, expected
 
     assert response.status_code==expected_status_code
     assert response.get_json().get('error_id') == expected_error_id
-    assert response.get_json().get('won') == expected_won_game
+    assert response.get_json().get('win') == expected_won_game
 
 def generate_player(client, is_creator):
 
