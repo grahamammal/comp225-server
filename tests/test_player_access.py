@@ -34,33 +34,81 @@ def test_add_player(client,
         assert response.get_json()['error_id']==expected_error_id
 
 @pytest.mark.parametrize(
-    ('player_has_target', 'player_is_alive', 'guessed_correct', 'expected_error_id','expected_status_code'),
+    ('num_players', 'game_state', 'player_is_alive', 'guessed_correct', 'expected_error_id','expected_status_code'),
     (
-        (False, True, None, 5, 400), # player has no target
-        (True, True, True, None, 302), # player wins
-        (True, True, True, None, 200), # player got target but didn't win
-        (None, True, None, 9, 400), # player is dead
-        (True, True, False, 10, 400), # player gave wrong kill code
-        (None, None, None, None, 401)
+        (3, 0, True, None, 5, 400), # player has no target
+        (2, 1, True, True, None, 200), # player wins
+        (3, 1, True, True, None, 200), # player got target but didn't win
+        (3, 1, False, None, 9, 400), # player is dead
+        (3, 1, True, False, 10, 400), # player gave wrong kill code
+        (None, None, None, None, 12, 422) # player doesn't exist
     )
 )
-def test_got_target(client, player_has_target, player_is_alive, guessed_correct, expected_error_id, expected_status_code):
+def test_got_target(app, client, num_players, game_state, player_is_alive, guessed_correct, expected_error_id, expected_status_code):
 
-    
+    if num_players is None:
+        # send fake authorization
+        headers=headers = {'Authorization' : 'Bearer ' + 'dyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1NTU2MjA3MTMsIm5iZiI6MTU1NTYyMDcxMywianRpIjoiZTc1YTU5MzEtODU2Yy00OTcwLThiZmItNDRhMWU2OTI3OGJiIiwiZXhwIjoxNTU1NjIxNjEzLCJpZGVudGl0eSI6NSwiZnJlc2giOmZhbHNlLCJ0eXBlIjoiYWNjZXNzIn0.4lpagzD_gVJqWWXW37CkzuccHYoMtjVOQ7j08SXbb_0'}
+        response=client.post(
+            '/player_access/got_target',
+            headers=headers,
+            json={'guessed_target_kill_code' : 1234}
+        )
+    else:
+        players_info = create_test_game(client, num_players, game_state)
 
-    response = client.post(
-        '/player_access/got_target',
-        json={'player_id' : this_player_id,
-              'guessed_target_kill_code' : guessed_target_kill_code}
-    )
+        target_kill_code = None
+        # if the game is started, find the target
+        if game_state == 1:
+            with app.app_context():
+                target_id=get_db().execute(
+                    'SELECT target_id FROM players'
+                    ' WHERE player_first_name = ? AND player_last_name = ?',
+                    (players_info[0]['player_first_name'], players_info[0]['player_last_name'])
+                ).fetchone()[0]
+
+                target_kill_code=get_db().execute(
+                    'SELECT player_kill_code FROM players'
+                    ' WHERE player_id = ?',
+                    (target_id, )
+                ).fetchone()[0]
+
+        # if the player should be dead force them to die
+        if not player_is_alive:
+            with app.app_context():
+                get_db().execute(
+                    'UPDATE players'
+                    ' SET is_alive = 0'
+                    ' WHERE player_first_name = ? AND player_last_name = ?',
+                    (players_info[0]['player_first_name'], players_info[0]['player_last_name'])
+                )
+                get_db().commit()
+
+        if not guessed_correct:
+            # send the wrong kill code
+            headers=headers = {'Authorization' : 'Bearer ' + players_info[0]['access_token']}
+            response=client.post(
+                '/player_access/got_target',
+                headers=headers,
+                json={'guessed_target_kill_code' : 1234}
+            )
+        else:
+            # send the correct kill code
+            headers=headers = {'Authorization' : 'Bearer ' + players_info[0]['access_token']}
+            response=client.post(
+                '/player_access/got_target',
+                headers=headers,
+                json={'guessed_target_kill_code' : target_kill_code}
+            )
+        if num_players == 2:
+            assert response.get_json().get('win')
+        else:
+            assert not response.get_json().get('win')
 
     assert response.status_code==expected_status_code
-    if expected_error_id is not None:
-        assert response.get_json()['error_id']==expected_error_id
+    assert response.get_json().get('error_id')==expected_error_id
 
-def test_won_game(client):
-    response=client.get('/player_access/won_game')
-    assert response.status_code==200
+
 
 @pytest.mark.parametrize(
     ('game_code', 'expected_rules', 'expected_name', 'expected_status_code'),
@@ -84,79 +132,190 @@ def test_get_game_info(client, game_code, expected_rules, expected_name, expecte
     assert response.status_code==expected_status_code
 
 @pytest.mark.parametrize(
-    ('this_player_id','expected_error_id', 'expected_status_code'),
+    ('game_state', 'expected_error_id', 'expected_status_code'),
     (
-        (4, 5, 400), # this player's game has not started
-        (1, None, 200) #
+        (0, 5, 400), # this player's game has not started
+        (1, None, 200), # the player is valid
+        (None, 12, 422) # the player doesn't exist
     )
 )
-def test_request_target(app, client, this_player_id, expected_error_id, expected_status_code):
+def test_request_target(app, client, game_state, expected_error_id, expected_status_code):
 
-        response=client.post(
+    if game_state is None:
+        # send fake info if the player doesn't exist
+        headers=headers = {'Authorization' : 'Bearer ' + 'dyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1NTU2MjA3MTMsIm5iZiI6MTU1NTYyMDcxMywianRpIjoiZTc1YTU5MzEtODU2Yy00OTcwLThiZmItNDRhMWU2OTI3OGJiIiwiZXhwIjoxNTU1NjIxNjEzLCJpZGVudGl0eSI6NSwiZnJlc2giOmZhbHNlLCJ0eXBlIjoiYWNjZXNzIn0.4lpagzD_gVJqWWXW37CkzuccHYoMtjVOQ7j08SXbb_0'}
+        response=client.get(
             '/player_access/request_target',
-            json={'player_id':this_player_id}
+            headers=headers
+        )
+    else:
+        # create a test game
+        players_info = create_test_game(client, 3, game_state)
+
+        headers = {'Authorization' : 'Bearer ' + players_info[0]['access_token']}
+        response=client.get(
+            '/player_access/request_target',
+            headers=headers
         )
 
+    assert response.status_code == expected_status_code
+    assert response.get_json().get('error_id') == expected_error_id
 
-        assert response.status_code == expected_status_code
-        if expected_error_id is not None:
-            print(response)
-            assert response.get_json()['error_id']==expected_error_id
-        else:
-            assert response.get_json()['target_first_name'] == 'test3'
-            assert response.get_json()['target_last_name'] == 'test3'
+    # if we expect a target
+    if expected_status_code is 200:
+        assert response.get_json().get('target_first_name') is not None
+        assert response.get_json().get('target_last_name') is not None
 
 
 @pytest.mark.parametrize(
-    ('this_player_id', 'expected_kill_code' , 'expected_error_id', 'expected_status_code'),
+    ('game_state', 'expected_error_id', 'expected_status_code'),
     (
-        (1, 1001, None, 200),
-        (4, None, 11, 400),
-        (100, None, 4, 403),
+        (1, None, 200), # player has a kill code
+        (None, 12, 422), # player doesn't exist
     )
 )
-def test_request_kill_code(client, this_player_id, expected_kill_code, expected_error_id, expected_status_code):
-    response=client.post(
-        '/player_access/request_kill_code',
-        json={'player_id' : this_player_id}
-    )
-
-    assert response.status_code == expected_status_code
-    if expected_error_id is None:
-        assert response.get_json()['player_kill_code'] == expected_kill_code
+def test_request_kill_code(client, game_state, expected_error_id, expected_status_code):
+    if game_state is None:
+        # send fake info if the player doesn't exist
+        headers=headers = {'Authorization' : 'Bearer ' + 'dyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1NTU2MjA3MTMsIm5iZiI6MTU1NTYyMDcxMywianRpIjoiZTc1YTU5MzEtODU2Yy00OTcwLThiZmItNDRhMWU2OTI3OGJiIiwiZXhwIjoxNTU1NjIxNjEzLCJpZGVudGl0eSI6NSwiZnJlc2giOmZhbHNlLCJ0eXBlIjoiYWNjZXNzIn0.4lpagzD_gVJqWWXW37CkzuccHYoMtjVOQ7j08SXbb_0'}
+        response=client.get(
+            '/player_access/request_kill_code',
+            headers=headers
+        )
     else:
-        assert response.get_json()['error_id'] == expected_error_id
+        # create a test game
+        players_info = create_test_game(client, 3, game_state)
 
-@pytest.mark.parametrize(
-    ('this_player_id', 'expected_error_id', 'expected_status_code'),
-    (
-        (7, None, 200), # the player is dead and should be removed
-        (4, None, 200), # the player is the last player of the game and the game should be deleted
-        (5, 9, 400), # the player is alive and shouldn't be removed
-        (100, 4, 403), # the player doesn't exist
-    )
-)
-def test_remove_from_game(app, client, this_player_id, expected_error_id, expected_status_code):
-    response=client.post(
-        '/player_access/remove_from_game',
-        json={'player_id' : this_player_id}
-    )
+        headers = {'Authorization' : 'Bearer ' + players_info[0]['access_token']}
+        response=client.get(
+            '/player_access/request_kill_code',
+            headers=headers
+        )
 
     assert response.status_code == expected_status_code
+    assert response.get_json().get('error_id') == expected_error_id
 
-    if expected_error_id is None:
+    # if we expect a target
+    if expected_status_code is 200:
+        assert response.get_json().get('player_kill_code') is not None
+
+@pytest.mark.parametrize(
+    ('num_players', 'is_alive', 'expected_error_id', 'expected_status_code'),
+    (
+        (3, False, None, 200), # the player is dead and should be removed
+        (1, True, None, 200), # the player is the last player of the game and the game should be deleted
+        (3, True, 9, 400), # the player is alive and shouldn't be removed
+        (None, None, 12, 422), # the player doesn't exist
+    )
+)
+def test_remove_from_game(app, client, num_players, is_alive, expected_error_id, expected_status_code):
+
+    if num_players is None:
+        # send fake info if the player doesn't exist
+        headers=headers = {'Authorization' : 'Bearer ' + 'dyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1NTU2MjA3MTMsIm5iZiI6MTU1NTYyMDcxMywianRpIjoiZTc1YTU5MzEtODU2Yy00OTcwLThiZmItNDRhMWU2OTI3OGJiIiwiZXhwIjoxNTU1NjIxNjEzLCJpZGVudGl0eSI6NSwiZnJlc2giOmZhbHNlLCJ0eXBlIjoiYWNjZXNzIn0.4lpagzD_gVJqWWXW37CkzuccHYoMtjVOQ7j08SXbb_0'}
+        response=client.get(
+            '/player_access/request_kill_code',
+            headers=headers
+        )
+
+    else:
+        # create a test game
+        players_info = create_test_game(client, num_players, 1)
+
+        if not is_alive:
+        # force dead players to be dead
+            with app.app_context():
+                get_db().execute(
+                    'UPDATE players'
+                    ' SET is_alive = 0'
+                    ' WHERE player_first_name = ? AND player_last_name = ?',
+                    (players_info[0]['player_first_name'], players_info[0]['player_last_name'])
+                )
+                get_db().commit()
+
+        headers = {'Authorization' : 'Bearer ' + players_info[0]['access_token']}
+        response=client.get(
+            '/player_access/remove_from_game',
+            headers=headers
+        )
+
+    assert response.status_code == expected_status_code
+    assert response.get_json().get('error_id') == expected_error_id
+
+@pytest.mark.parametrize(
+    ('num_players', 'starting_game_state', 'expected_game_state', 'expected_error_id', 'expected_status_code'),
+    (
+        (3, 1, 1, None, 200), # the player quits and targets should be reassigned
+        (2, 1, 2, None, 200), # the player quits and there is only one player left, meaning they win
+        (3, 0, 0, None, 200), # the player quits before the game starts
+        (None, None, None, 12, 422), # the player doesn't exist
+    )
+)
+def test_quit_game(app, client, num_players, starting_game_state, expected_game_state, expected_error_id, expected_status_code):
+    if num_players is None:
+        # send fake info if the player doesn't exist
+        headers=headers = {'Authorization' : 'Bearer ' + 'dyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1NTU2MjA3MTMsIm5iZiI6MTU1NTYyMDcxMywianRpIjoiZTc1YTU5MzEtODU2Yy00OTcwLThiZmItNDRhMWU2OTI3OGJiIiwiZXhwIjoxNTU1NjIxNjEzLCJpZGVudGl0eSI6NSwiZnJlc2giOmZhbHNlLCJ0eXBlIjoiYWNjZXNzIn0.4lpagzD_gVJqWWXW37CkzuccHYoMtjVOQ7j08SXbb_0'}
+        response=client.get(
+            '/player_access/request_kill_code',
+            headers=headers
+        )
+
+    else:
+        players_info = create_test_game(client, num_players, starting_game_state)
+
+        target_id = None
+        game_code = None
+        player_targeting_quitter_id = None
+
+        with app.app_context():
+            game_code = get_db().execute(
+                'SELECT game_code FROM players'
+                ' WHERE player_first_name = ? AND player_last_name = ?',
+                (players_info[0]['player_first_name'], players_info[0]['player_last_name'])
+            ).fetchone()[0]
+
+        if starting_game_state == 1:
+            with app.app_context():
+                target_id=get_db().execute(
+                    'SELECT target_id FROM players'
+                    ' WHERE player_first_name = ? AND player_last_name = ?',
+                    (players_info[0]['player_first_name'], players_info[0]['player_last_name'])
+                ).fetchone()[0]
+
+                player_targeting_quitter_id = get_db().execute(
+                    'SELECT player_id FROM players'
+                    ' WHERE target_first_name = ? AND target_last_name = ?',
+                    (players_info[0]['player_first_name'], players_info[0]['player_last_name'])
+                ).fetchone()[0]
+
+
+
+        headers = {'Authorization' : 'Bearer ' + players_info[0]['access_token']}
+        response=client.get(
+            '/player_access/quit_game',
+            headers=headers
+        )
+
+    assert response.status_code == expected_status_code
+    assert response.get_json().get('error_id') == expected_error_id
+
+    if num_players is not None:
         with app.app_context():
             assert get_db().execute(
                 'SELECT * FROM players'
-                ' WHERE player_id = ?',
-                (this_player_id, )
+                ' WHERE player_first_name = ? AND player_last_name = ?',
+                (players_info[0]['player_first_name'], players_info[0]['player_last_name'])
             ).fetchone() is None
 
-            if this_player_id == 8:
-                assert get_db().execute(
-                    'SELECT * FROM games'
-                    ' WHERE game_code == ?',
-                    (1003,)
-                ).fetchone() is None
-    else:
-        assert response.get_json()['error_id'] == expected_error_id
+            assert get_db().execute(
+                'SELECT game_state FROM games'
+                ' WHERE game_code = ?',
+                (game_code, )
+            ).fetchone()[0] == expected_game_state
+
+            if starting_game_state == 1:
+                  assert get_db().execute(
+                      'SELECT target_id FROM players'
+                      ' WHERE player_id = ?',
+                      (player_targeting_quitter_id, )
+                  ).fetchone()[0] ==  target_id

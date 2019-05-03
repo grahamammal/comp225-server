@@ -1,13 +1,13 @@
 import os
 import redis
 
-from flask import Flask, session, abort, render_template, jsonify
-from flask_session import Session
-from datetime import timedelta
+from flask import Flask, jsonify
 
-SESSION_TYPE = 'redis'
-PERMANANT_SESSION_LIFETIME = timedelta(days=365)
-sess = Session()
+from flask_jwt_extended import (
+    JWTManager, jwt_required, create_access_token,
+    get_jwt_identity
+)
+
 
 def create_app(test_config=None):
     """Creates app with specified config"""
@@ -15,9 +15,7 @@ def create_app(test_config=None):
     app.config.from_mapping(
         SECRET_KEY=b'_5#y2L"F4Q8z\n\xec]/',
         DATABASE=os.path.join(app.instance_path, 'assassin_server.sqlite'),
-        SESSION_TYPE='filesystem'
     )
-
 
 
     if test_config is None:
@@ -34,13 +32,24 @@ def create_app(test_config=None):
     except OSError:
         pass
 
-    #intialises session on server
-    sess.init_app(app)
+    app.config['JWT_ACCESS_TOKEN_EXPIRES']=False
 
+    #initalises json web tokens
+    jwt = JWTManager(app)
     # a simple page that says hello
     @app.route('/hello')
     def hello():
-        return 'Hello, World!'
+        return 'Hello, World!', 200
+
+    # sets up the custom returns for messed up tokens
+    @jwt.invalid_token_loader
+    def my_invalid_token_callback(expired_token):
+        return internal_error(12), 422
+
+    @jwt.unauthorized_loader
+    def my_unauthorized_loader_callback(expired_token):
+        return internal_error(13), 401
+
 
 
     #adds database to the app
@@ -79,7 +88,9 @@ def internal_error(error_id):
         8: jsonify({'message':'There are no more available game codes', 'error_id':8}),
         9: jsonify({'message':'You are not dead or the last player', 'error_id':9}),
         10: jsonify({'message':'Incorrect killcode', 'error_id':10}),
-        11: jsonify({'message':'The hunt hasn\'t started yet', 'error_id':11})
+        11: jsonify({'message':'The hunt hasn\'t started yet', 'error_id':11}),
+        12: jsonify({'message':'This JWT token is invalid', 'error_id':12}),
+        13: jsonify({'message':'Please supply a JWT token', 'error_id':13}),
     }
 
     return error_dict[error_id]

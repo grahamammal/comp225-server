@@ -1,7 +1,10 @@
 import functools, random
-
 from flask import (
-    Blueprint, flash, g, redirect, render_template, request, session, url_for, jsonify, abort, redirect, url_for
+    Blueprint, g, request, url_for, jsonify
+)
+
+from flask_jwt_extended import (
+    JWTManager, jwt_required, create_access_token, get_jwt_identity
 )
 
 from assassin_server.db import get_db, row_to_dict
@@ -79,21 +82,25 @@ def add_player():
         (player_first_name, player_last_name, game_code)
     ).fetchone()[0]
 
+    access_token=create_access_token(identity=player_id)
+
 
     output = {
-        'player_id': player_id,
-        'player_kill_code': player_kill_code
+        'player_kill_code': player_kill_code,
+        'access_token' : access_token
     }
+
 
     return jsonify(output)
 
 # May want to add a way to ensure this is sent from our app
 @bp.route('/got_target', methods=['POST'])
+@jwt_required
 def got_target():
-
-    content=request.get_json()
-    player_id=content['player_id']
+    #finds the id of whoever sent the token
+    player_id = get_jwt_identity()
     #asking the player to provide their target's kill code
+    content=request.get_json()
     guessed_target_kill_code = content['guessed_target_kill_code']
 
 
@@ -130,8 +137,8 @@ def got_target():
         (target_id, )
     ).fetchone()[0]
 
-    if guessed_target_kill_code != str(target_kill_code):
-        return (internal_error(10), 400)
+    if str(guessed_target_kill_code) != str(target_kill_code):
+        return(internal_error(10), 400)
 
     # retrieve the target of your target
     new_target=row_to_dict(
@@ -163,9 +170,6 @@ def got_target():
 
     return jsonify({"win": False}), 200
 
-@bp.route('/won_game')
-def won_game():
-    return jsonify({"win": True})
 
 @bp.route('/get_game_info',  methods=['POST'])
 def get_game_info():
@@ -186,12 +190,13 @@ def get_game_info():
     return jsonify(output)
 
 #may want to ensure request is sent from app
-@bp.route('/request_target', methods=['POST'])
+@bp.route('/request_target', methods=['GET'])
+@jwt_required
 def request_target():
     """Requests the target of the player who made the request, using that players session info"""
-    #makes sure your session has a player associated with it
-    content=request.get_json()
-    player_id=content['player_id']
+
+    #finds the id of whoever sent the token
+    player_id = get_jwt_identity()
 
 
 
@@ -210,13 +215,12 @@ def request_target():
     output=row_to_dict(target)
     return jsonify(output)
 
-# CHANGE the direct access to kill code or make the player id much safer!
 #Returns the player's kill code
-@bp.route('/request_kill_code', methods=['POST'])
+@bp.route('/request_kill_code', methods=['GET'])
+@jwt_required
 def request_kill_code():
-
-    content=request.get_json()
-    player_id=content['player_id']
+    #finds the id of whoever sent the token
+    player_id = get_jwt_identity()
 
     db = get_db()
 
@@ -235,11 +239,12 @@ def request_kill_code():
     output=row_to_dict(player_kill_code)
     return jsonify(output)
 
-@bp.route('/remove_from_game', methods=['POST'])
+@bp.route('/remove_from_game', methods=['GET'])
+@jwt_required
 def remove_from_game():
 
-    content=request.get_json()
-    player_id=content['player_id']
+    #finds the id of whoever sent the token
+    player_id = get_jwt_identity()
 
     db=get_db()
 
@@ -274,7 +279,7 @@ def remove_from_game():
         )
         db.commit()
 
-        return '', 200
+        return jsonify({'message' : 'success'}), 200
 
 
     is_alive = db.execute(
@@ -296,4 +301,64 @@ def remove_from_game():
     )
     db.commit()
 
-    return '', 200
+    return jsonify({'message' : 'success'}), 200
+
+
+@bp.route('/quit_game', methods = ['GET'])
+@jwt_required
+def quit_game():
+    #finds the id of whoever sent the token
+    player_id = get_jwt_identity()
+
+    db=get_db()
+
+    # get the players game
+    game_code = db.execute(
+        'SELECT game_code FROM players'
+        ' WHERE player_id = ?',
+        (player_id, )
+    ).fetchone()[0]
+
+    # get the players target
+    target_info = db.execute(
+        'SELECT target_first_name, target_last_name, target_id FROM players'
+        ' WHERE player_id = ?',
+        (player_id, )
+    ).fetchone()
+
+    # remove the player from the game
+    db.execute(
+        'DELETE FROM players'
+        ' WHERE player_id = ?',
+        (player_id, )
+    )
+    db.commit()
+
+    #check if the game is started
+    if target_info[0] is not None:
+        # set the target of the quitter to be the quitters target
+        db.execute(
+            'UPDATE players'
+            ' SET target_first_name = ?, target_last_name = ?, target_id = ?'
+            ' WHERE target_id = ?',
+            (target_info[0], target_info[1], target_info[2], player_id)
+        )
+        db.commit()
+
+        # if theres only one player left set the game to won
+        all_players = db.execute(
+            'SELECT * FROM players'
+            ' WHERE game_code = ?',
+            (game_code, )
+        ).fetchall()
+
+        if len(all_players) == 1:
+            db.execute(
+                'UPDATE games'
+                ' SET game_state = 2'
+                ' WHERE game_code = ?',
+                (game_code, )
+            )
+            db.commit()
+
+    return jsonify({'message' : 'success'}), 200
