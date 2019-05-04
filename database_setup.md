@@ -4,6 +4,8 @@ from assassin_server.\_\_init\_\_ import create_app
 app = create_app()
 app.app_context().push()
 
+from assassin_server.__init__ import db
+
 db.drop_all()
 db.create_all()
 

@@ -17,11 +17,12 @@ class Players(db.Model):
     game_code = db.Column(db.Integer, nullable = False)
 
     def as_dict(self):
-        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns} # from : https://stackoverflow.com/questions/5022066/how-to-serialize-sqlalchemy-result-to-json
 
 class Games(db.Model):
     game_id = db.Column(db.Integer, primary_key = True, autoincrement = True)
     game_name = db.Column(db.String(100), nullable = False)
+    game_rules = db.Column(db.String(100))
     game_code = db.Column(db.Integer, unique = True, nullable = False)
 
     game_state = db.Column(db.Integer, nullable = False)

@@ -4,7 +4,8 @@ import random
 import string
 from flask import session
 
-from assassin_server.db import get_db
+from assassin_server.__init__ import db
+from assassin_server import db_models
 from conftest import create_test_game
 
 @pytest.mark.parametrize(
@@ -79,26 +80,6 @@ def generate_player(client, is_creator):
               'is_creator':is_creator,
               'game_code': 9999}
     )
-
-def test_max_games(client, app):
-    with app.app_context():
-        db=get_db()
-        for i in range(1004, 9999):
-            db.execute(
-                'INSERT INTO games (game_name, game_rules, game_code, game_state)'
-                ' VALUES (?, ?, ?, ?)',
-                ('name', 'rules', i, 0)
-            )
-
-        db.commit()
-    for i in range(5):
-        response=client.post(
-            '/creator_access/create_game',
-            json={'game_name':'name', 'game_rules':'rules'}
-        )
-
-    assert response.status_code==500
-    assert response.get_json()['error_id']==8
 
 
 @pytest.mark.parametrize(

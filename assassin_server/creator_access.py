@@ -8,7 +8,9 @@ from flask_jwt_extended import (
     JWTManager, jwt_required, create_access_token, get_jwt_identity
 )
 
-from assassin_server.__init__ import internal_error
+from assassin_server.__init__ import internal_error, db
+from assassin_server import db_models
+
 
 bp = Blueprint('creator_access', __name__, url_prefix='/creator_access')
 
@@ -24,37 +26,30 @@ def create_game():
     if game_name is None:
         return (internal_error(7), 400)
 
-    db=get_db()
-
     is_unique=False
     attempts=0
     min_code=1000
     max_code=9999
 
-    #guarentees that game_code is UNIQUE
+    # guarentees that game_code is UNIQUE
     while not is_unique:
         game_code=random.randint(min_code, max_code+1)
 
-        if db.execute(
-            'SELECT game_code FROM games'
-            ' WHERE game_code = ?',
-            (game_code,)
-        ).fetchone() is None:
+        if db.session.query(db_models.Games.game_id).filter_by(game_code=game_code).scalar() is None: # pattern from https://stackoverflow.com/questions/32938475/flask-sqlalchemy-check-if-row-exists-in-table
             is_unique=True
 
         attempts=attempts+1
         if attempts>(max_code-min_code):
             return (internal_error(8), 500)
 
-
-
-    db.execute(
-        'INSERT INTO games'
-        ' (game_name, game_rules, game_code, game_state)'
-        ' VALUES (?, ?, ?, 0)',
-        (game_name, game_rules, game_code)
-    )
-    db.commit()
+    new_game = db_models.Games(
+        game_name = game_name,
+        game_rules = game_rules,
+        game_code = game_code,
+        game_state = 0
+        )
+    db.session.add(new_game)
+    db.session.commit()
 
     output = {
         'game_code': game_code

@@ -1,6 +1,5 @@
 import pytest
 from flask import session
-from assassin_server.db import get_db
 from conftest import create_test_game
 
 @pytest.mark.parametrize(

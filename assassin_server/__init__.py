@@ -58,17 +58,6 @@ def create_app(test_config=None):
     # a simple page that says hello
     @app.route('/hello')
     def hello():
-        me = db_models.Players(
-            player_first_name = 'test',
-            player_last_name = 'test',
-            is_alive = 0,
-            is_creator = 0,
-            game_code = 1234
-            )
-        db.session.add(me)
-        db.session.commit()
-
-        return jsonify(db_models.Players.query.filter_by(player_first_name='test').first().as_dict())
         return 'Hello, World!', 200
 
 
