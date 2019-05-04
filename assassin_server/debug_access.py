@@ -5,7 +5,6 @@ from flask import (
     Blueprint, flash, g, redirect, render_template, request, session, url_for, jsonify
 )
 
-from assassin_server.db import get_db, row_to_dict, table_to_dict
 from assassin_server.creator_access import generate_targets
 
 bp = Blueprint('test_access', __name__, url_prefix='/test_access')

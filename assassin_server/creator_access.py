@@ -8,7 +8,6 @@ from flask_jwt_extended import (
     JWTManager, jwt_required, create_access_token, get_jwt_identity
 )
 
-from assassin_server.db import get_db, row_to_dict, table_to_dict
 from assassin_server.__init__ import internal_error
 
 bp = Blueprint('creator_access', __name__, url_prefix='/creator_access')

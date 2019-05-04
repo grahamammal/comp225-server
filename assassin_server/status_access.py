@@ -9,7 +9,6 @@ from flask_jwt_extended import (
     get_jwt_identity
 )
 
-from assassin_server.db import get_db, row_to_dict
 from assassin_server.__init__ import internal_error
 
 bp = Blueprint('status_access', __name__, url_prefix='/status_access')

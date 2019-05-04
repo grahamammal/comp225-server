@@ -2,6 +2,7 @@ import os
 import redis
 
 from flask import Flask, jsonify
+from flask_sqlalchemy import SQLAlchemy
 
 from flask_jwt_extended import (
     JWTManager, jwt_required, create_access_token,
@@ -9,12 +10,17 @@ from flask_jwt_extended import (
 )
 
 
+
+db = SQLAlchemy()
+from assassin_server import db_models
+
 def create_app(test_config=None):
     """Creates app with specified config"""
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
         SECRET_KEY=b'_5#y2L"F4Q8z\n\xec]/',
-        DATABASE=os.path.join(app.instance_path, 'assassin_server.sqlite'),
+        SQLALCHEMY_DATABASE_URI='postgresql://postgres:mylittlepostgres@localhost:5432/assassin_dev_server',
+        SQLALCHEMY_TRACK_MODIFICATIONS = False
     )
 
 
@@ -36,10 +42,6 @@ def create_app(test_config=None):
 
     #initalises json web tokens
     jwt = JWTManager(app)
-    # a simple page that says hello
-    @app.route('/hello')
-    def hello():
-        return 'Hello, World!', 200
 
     # sets up the custom returns for messed up tokens
     @jwt.invalid_token_loader
@@ -50,11 +52,25 @@ def create_app(test_config=None):
     def my_unauthorized_loader_callback(expired_token):
         return internal_error(13), 401
 
-
-
     #adds database to the app
-    from . import db
     db.init_app(app)
+
+    # a simple page that says hello
+    @app.route('/hello')
+    def hello():
+        me = db_models.Players(
+            player_first_name = 'test',
+            player_last_name = 'test',
+            is_alive = 0,
+            is_creator = 0,
+            game_code = 1234
+            )
+        db.session.add(me)
+        db.session.commit()
+
+        return jsonify(db_models.Players.query.filter_by(player_first_name='test').first().as_dict())
+        return 'Hello, World!', 200
+
 
     #adds the player_access blueprint to the app
     from . import player_access
