@@ -151,7 +151,11 @@ def player_list():
             game_code = creator_info.game_code
         ).all()
 
-    return jsonify({"players": player_list})
+    output = []
+    for row in player_list:
+        output.append({'player_first_name' : row.player_first_name, 'player_last_name' : row.player_last_name})
+
+    return jsonify({"players": output})
 
 
 

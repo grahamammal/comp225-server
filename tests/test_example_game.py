@@ -1,6 +1,7 @@
 import pytest
 from flask import session
 from conftest import create_test_game
+from assassin_server.db_models import Players, Games, db, table_to_dict
 
 
 #For this test we'll run a 10 person game
@@ -12,19 +13,19 @@ def test_mock_game(client, app):
 
     game_code = None
     with app.app_context():
-        game_code = get_db().execute(
-            'SELECT game_code FROM players'
-            ' WHERE player_first_name = ?',
-            (players_info[0]['player_first_name'], )
-        ).fetchone()[0]
+        game_code = db.session.query(
+                Players.game_code
+            ).filter_by(
+                player_first_name = players_info[0]['player_first_name']
+            ).first().game_code
 
     creator_id = None
     with app.app_context():
-        creator_id = get_db().execute(
-            'SELECT player_id FROM players'
-            ' WHERE player_first_name = ? AND player_last_name = ?',
-            (players_info[0]['player_first_name'], players_info[0]['player_last_name'])
-        ).fetchone()[0]
+        creator_id = db.session.query(
+                Players.player_id
+            ).filter_by(
+                player_first_name = players_info[0]['player_first_name']
+            ).first().player_id
 
         assert isinstance(creator_id, int)
 
@@ -32,10 +33,11 @@ def test_mock_game(client, app):
     with app.app_context():
         current_id = creator_id
         for i in range(game_size):
-            target_id = get_db().execute(
-                'SELECT target_id FROM players WHERE player_id = ?',
-                (current_id,)
-            ).fetchone()[0]
+            target_id = db.session.query(
+                    Players.target_id
+                ).filter_by(
+                    player_id = current_id
+                ).first().target_id
 
             assert target_id is not None
             if i < game_size-1:
@@ -57,11 +59,13 @@ def test_mock_game(client, app):
     # find the number of players left
     num_players_alive = None
     with app.app_context():
-        num_players_alive = len(table_to_dict(get_db().execute(
-            'SELECT * FROM players'
-            ' WHERE game_code = ?',
-            (game_code, )
-        ).fetchall()))
+        num_players_alive = len(
+            db.session.query(
+                Players.player_id
+            ).filter_by(
+                game_code = game_code
+            ).all()
+        )
 
     assert num_players_alive > 0
 
@@ -74,11 +78,13 @@ def test_mock_game(client, app):
 
     # make sure there's 1 player left
     with app.app_context():
-        num_players_alive = len(table_to_dict(get_db().execute(
-            'SELECT * FROM players'
-            ' WHERE game_code = ?',
-            (game_code, )
-        ).fetchall()))
+        num_players_alive = len(
+            db.session.query(
+                Players.player_id
+            ).filter_by(
+                game_code = game_code
+            ).all()
+        )
 
         assert num_players_alive == 1
 
@@ -92,23 +98,24 @@ def test_mock_game(client, app):
 
     #Make sure both the winner and the game are deleted
     with app.app_context():
-        assert get_db().execute(
-            'SELECT * FROM players'
-            ' WHERE player_first_name = ?',
-            (players_info[winner_index]['player_first_name'], )
-        ).fetchone() is None
+        assert db.session.query(
+            Players.player_id
+        ).filter_by(
+            player_first_name = players_info[winner_index]['player_first_name']
+        ).scalar() is None
 
-        assert get_db().execute(
-            'SELECT * FROM players'
-            ' WHERE game_code = ?',
-            (game_code, )
-        ).fetchone() is None
+        assert db.session.query(
+            Players.player_id
+        ).filter_by(
+            game_code = game_code
+        ).scalar() is None
 
-        assert get_db().execute(
-            'SELECT * FROM games'
-            ' WHERE game_code = ?',
-            (game_code, )
-        ).fetchone() is None
+        assert db.session.query(
+            Games.game_id
+        ).filter_by(
+            game_code = game_code
+        ).scalar() is None
+
 
 # Get's the target of a player and returns their new target's id
 def player_got_target(app, client, players_info, getter_index, is_winning_got):
@@ -126,15 +133,11 @@ def player_got_target(app, client, players_info, getter_index, is_winning_got):
         if players_info[i]['player_first_name'] == target_name['target_first_name']:
             target_index = i
 
-    headers = {'Authorization' : 'Bearer ' + players_info[target_index]['access_token']}
-    response=client.get(
-        '/player_access/request_kill_code',
-        headers=headers
-    )
-
-    assert response.status_code == 200
-
-    target_kill_code = response.get_json()['player_kill_code']
+    target_kill_code = db.session.query(
+            Players.player_kill_code
+        ).filter_by(
+            player_first_name = players_info[target_index]['player_first_name']
+        ).first().player_kill_code
 
     #get your target
     headers=headers = {'Authorization' : 'Bearer ' + players_info[getter_index]['access_token']}
@@ -157,17 +160,17 @@ def player_got_target(app, client, players_info, getter_index, is_winning_got):
 
     # make sure the target was killed and removed
     with app.app_context():
-        assert get_db().execute(
-            'SELECT * FROM players'
-            ' WHERE player_first_name = ?',
-            (target_name['target_first_name'], )
-        ).fetchone() is None
+        assert db.session.query(
+                Players.player_id
+            ).filter_by(
+                player_first_name =target_name['target_first_name']
+            ).scalar() is None
 
-        assert get_db().execute(
-            'SELECT target_first_name FROM players'
-            ' WHERE player_first_name = ?',
-            (players_info[getter_index]['player_first_name'], )
-        ).fetchone()[0] != target_name['target_first_name']
+        assert db.session.query(
+                Players.target_first_name
+            ).filter_by(
+                player_first_name = players_info[getter_index]['player_first_name']
+            ).first().target_first_name != target_name['target_first_name']
 
     return target_index
 
@@ -179,11 +182,11 @@ def test_quitter_game(app, client):
     # we'll find the game code
     game_code = None
     with app.app_context():
-        game_code = get_db().execute(
-            'SELECT game_code FROM players'
-            ' WHERE player_first_name = ?',
-            (players_info[0]['player_first_name'], )
-        ).fetchone()[0]
+        game_code = db.session.query(
+            Players.game_code
+        ).filter_by(
+            player_first_name = players_info[0]['player_first_name']
+        ).first().game_code
 
     # we'll make the creator quit
     headers = {'Authorization' : 'Bearer ' + players_info[0]['access_token']}
@@ -195,11 +198,11 @@ def test_quitter_game(app, client):
 
     # make sure they're gone
     with app.app_context():
-        assert get_db().execute(
-            'SELECT * FROM players'
-            ' WHERE player_first_name = ?',
-            (players_info[0]['player_first_name'], )
-        ).fetchone() is None
+        assert db.session.query(
+            Players.player_id
+        ).filter_by(
+            player_first_name = players_info[0]['player_first_name']
+        ).scalar() is None
 
     assert response.status_code == 200
 
@@ -217,11 +220,13 @@ def test_quitter_game(app, client):
 
     # make sure there's 1 player left
     with app.app_context():
-        num_players_alive = len(table_to_dict(get_db().execute(
-            'SELECT * FROM players'
-            ' WHERE game_code = ?',
-            (game_code, )
-        ).fetchall()))
+        num_players_alive = len(
+            db.session.query(
+                Players.player_id
+            ).filter_by(
+                game_code = game_code
+            ).all()
+        )
 
     assert num_players_alive == 1
 
@@ -235,20 +240,20 @@ def test_quitter_game(app, client):
 
     # make sure both the winner and the game are deleted
     with app.app_context():
-        assert get_db().execute(
-            'SELECT * FROM players'
-            ' WHERE player_first_name = ?',
-            (players_info[1]['player_first_name'], )
-        ).fetchone() is None
+        assert db.session.query(
+            Players.player_id
+        ).filter_by(
+            player_first_name = players_info[1]['player_first_name']
+        ).scalar() is None
 
-        assert get_db().execute(
-            'SELECT * FROM players'
-            ' WHERE game_code = ?',
-            (game_code, )
-        ).fetchone() is None
+        assert db.session.query(
+            Players.player_id
+        ).filter_by(
+            game_code = game_code
+        ).scalar() is None
 
-        assert get_db().execute(
-            'SELECT * FROM games'
-            ' WHERE game_code = ?',
-            (game_code, )
-        ).fetchone() is None
+        assert db.session.query(
+            Games.game_id
+        ).filter_by(
+            game_code = game_code
+        ).scalar() is None

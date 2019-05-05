@@ -381,45 +381,6 @@ POST http://<localhost>/status_access/game_state
 
 ## Debug Requests
 _Note: These requests should only be used for testing, and not used in the actual app_
-### Get Player
-
-This endpoint will get all the information about the specified player.
-
-#### HTTP Request
----
-```
-POST http://<localhost>/test_access/get_player
-    {
-        "player_first_name": "example"
-        "player_last_name": "example"
-        "game_code": 9999
-    }
-```
-
-#### URL Parameters
----
-| Parameter | Default | Description
-| ------ | ------ | ------|
-| player\_first\_name | None | The first name of the player |
-| player\_last\_name | None | The last name of the player |
-| game_code | None | The 4 digit code of the game the player is in |
-
-#### Return Value
----
-```
-{
-    "player_id": 0
-    "player_first_name": "example"
-    "player_last_name": "example"
-    "target_id": 0
-    "target_first_name":"example"
-    "target_last_name":"example"
-    "is_alive": 1
-    "is_creator": 0
-    "disputed_got": 0
-    "game_code": 9999
-}
-```
 
 ### Get All Players
 
@@ -449,37 +410,6 @@ A JSON list, where each entry contains the following:
     "is_creator": 0
     "disputed_got": 0
     "game_code": 9999
-}
-```
-
-### Get Game
-
-This endpoint will get all the information about the specified game.
-
-#### HTTP Request
----
-```
-POST http://<localhost>/test_access/get_game
-    {
-        "game_code": 9999
-    }
-```
-
-#### URL Parameters
----
-| Parameter | Default | Description
-| ------ | ------ | ------|
-| game_code | None | The 4 digit code of the game you want the info of|
-
-#### Return Value
----
-```
-{
-    "game_id": 0
-    "game_name": "name"
-    "game_rules": "rules"
-    "game_code": 9999
-    "game_state": 0
 }
 ```
 
