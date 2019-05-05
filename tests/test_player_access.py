@@ -1,7 +1,9 @@
 import pytest
 from flask import session
 from conftest import create_test_game
- 
+from assassin_server.db_models import db
+from assassin_server.db_models import Players, Games
+
 @pytest.mark.parametrize(
     ('player_first_name', 'player_last_name',
      'is_creator', 'game_code',
@@ -62,28 +64,32 @@ def test_got_target(app, client, num_players, game_state, player_is_alive, guess
         # if the game is started, find the target
         if game_state == 1:
             with app.app_context():
-                target_id=get_db().execute(
-                    'SELECT target_id FROM players'
-                    ' WHERE player_first_name = ? AND player_last_name = ?',
-                    (players_info[0]['player_first_name'], players_info[0]['player_last_name'])
-                ).fetchone()[0]
+                target_id = db.session.query(
+                        Players.target_id
+                    ).filter_by(
+                        player_first_name = players_info[0]['player_first_name'],
+                        player_last_name = players_info[0]['player_last_name']
+                    ).first().target_id
 
-                target_kill_code=get_db().execute(
-                    'SELECT player_kill_code FROM players'
-                    ' WHERE player_id = ?',
-                    (target_id, )
-                ).fetchone()[0]
+                target_kill_code = db.session.query(
+                        Players.player_kill_code
+                    ).filter_by(
+                        player_id=target_id,
+                    ).first().player_kill_code
 
         # if the player should be dead force them to die
         if not player_is_alive:
             with app.app_context():
-                get_db().execute(
-                    'UPDATE players'
-                    ' SET is_alive = 0'
-                    ' WHERE player_first_name = ? AND player_last_name = ?',
-                    (players_info[0]['player_first_name'], players_info[0]['player_last_name'])
-                )
-                get_db().commit()
+                player = db.session.query(
+                        Players
+                    ).filter_by(
+                        player_first_name = players_info[0]['player_first_name'],
+                        player_last_name = players_info[0]['player_last_name']
+                    ).first()
+
+                player.is_alive = False
+                db.session.commit()
+
 
         if not guessed_correct:
             # send the wrong kill code
@@ -114,7 +120,7 @@ def test_got_target(app, client, num_players, game_state, player_is_alive, guess
 @pytest.mark.parametrize(
     ('game_code', 'expected_rules', 'expected_name', 'expected_status_code'),
     (
-        (1000, 'no rules dweeb', 'test_game', 200),
+        (1000, 'no rules', 'test_game', 200),
         (1001, None, 'player_access_test_game', 200),
         (5000, None, None, 400)
     )

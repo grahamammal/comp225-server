@@ -9,9 +9,8 @@ from flask_jwt_extended import (
 )
 
 from assassin_server.__init__ import internal_error
-from assassin_server import db_models
-from assassin_server.db_models import table_to_dict
-db = db_models.db
+from assassin_server.db_models import Players, Games, db, table_to_dict
+
 
 bp = Blueprint('creator_access', __name__, url_prefix='/creator_access')
 
@@ -37,7 +36,7 @@ def create_game():
         game_code=random.randint(min_code, max_code+1)
 
         if db.session.query(
-                db_models.Games.game_id
+                Games.game_id
             ).filter_by(
                 game_code=game_code
             ).scalar() is None: # pattern from https://stackoverflow.com/questions/32938475/flask-sqlalchemy-check-if-row-exists-in-table
@@ -47,7 +46,7 @@ def create_game():
         if attempts>(max_code-min_code):
             return (internal_error(8), 500)
 
-    new_game = db_models.Games(
+    new_game = Games(
         game_name = game_name,
         game_rules = game_rules,
         game_code = game_code,
@@ -72,7 +71,7 @@ def start_hunt():
     player_id = get_jwt_identity()
 
     is_creator = db.session.query(
-            db_models.Players.is_creator
+            Players.is_creator
         ).filter_by(
             player_id = player_id
         ).first().is_creator
@@ -84,14 +83,14 @@ def start_hunt():
 
     # grabs the game code
     game_code = db.session.query(
-            db_models.Players.game_code
+            Players.game_code
         ).filter_by(
             player_id = player_id
         ).first().game_code
 
     #checks if the player is the only player
     if len(db.session.query(
-            db_models.Players.player_id
+            Players.player_id
         ).filter_by(
             game_code = game_code
         ).all())<2:
@@ -104,7 +103,7 @@ def start_hunt():
     for player in players_with_target:
 
         player_from_db = db.session.query(
-                db_models.Players
+                Players
             ).filter_by(
                 player_id=player['player_id']
             ).first()
@@ -118,10 +117,12 @@ def start_hunt():
 
     #update game_state
     game = db.session.query(
-            db_models.Games
+            Games
         ).filter_by(
             game_code = game_code
         ).first()
+
+    game.game_state = 1
     db.session.commit()
 
 
@@ -134,8 +135,8 @@ def player_list():
     player_id = get_jwt_identity()
 
     creator_info = db.session.query(
-            db_models.Players.is_creator,
-            db_models.Players.game_code
+            Players.is_creator,
+            Players.game_code
         ).filter_by(
             player_id = player_id
         ).first()
@@ -144,8 +145,8 @@ def player_list():
         return (internal_error(6), 403)
 
     player_list = db.session.query(
-            db_models.Players.player_first_name,
-            db_models.Players.player_last_name
+            Players.player_first_name,
+            Players.player_last_name
         ).filter_by(
             game_code = creator_info.game_code
         ).all()
@@ -159,9 +160,9 @@ def player_list():
 def generate_targets(game_code):
 
     players_with_target=[]
-    players_without_target=db_models.table_to_dict(
+    players_without_target=table_to_dict(
         db.session.query(
-                db_models.Players
+                Players
             ).filter_by(
                 game_code=game_code
             ).all()
