@@ -249,15 +249,13 @@ def remove_from_game():
                 Players
             ).filter_by(
                 player_id = player_id
-            ).first()
-        db.session.delete(player)
+            ).delete()
 
-        game = db.session.query(
+        db.session.query(
                 Games
             ).filter_by(
                 game_code = game_code.game_code
-            ).first()
-        db.session.delete(game)
+            ).delete()
         db.session.commit()
 
         return jsonify({'message' : 'success'}), 200
@@ -274,12 +272,12 @@ def remove_from_game():
         return (internal_error(9), 400)
 
     #remove them from the game
-    player = db.session.query(
+    db.session.query(
             Players
         ).filter_by(
             player_id = player_id
-        ).first()
-    db.session.delete(player)
+        ).delete()
+
     db.session.commit()
 
     return jsonify({'message' : 'success'}), 200
