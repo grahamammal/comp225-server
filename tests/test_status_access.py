@@ -1,12 +1,13 @@
 import pytest
 from flask import session
 from conftest import create_test_game
+from assassin_server.db_models import Players, Games, db, table_to_dict
 
 @pytest.mark.parametrize(
     ('expected_is_alive', 'expected_error_id', 'expected_status_code'),
     (
-        (0, None, 200), # a dead player asks for their status
-        (1, None, 200), # an alive player asks for their status
+        (False, None, 200), # a dead player asks for their status
+        (True, None, 200), # an alive player asks for their status
         (None, 12, 422), # a non existent player asks for their status
     )
 )
@@ -24,7 +25,7 @@ def test_is_alive(app, client, expected_is_alive, expected_error_id, expected_st
                     player_last_name = players_info[0]['player_last_name']
                 ).first()
 
-            player.is_alive = (1 == True)
+            player.is_alive = expected_is_alive
             db.session.commit()
 
         # send our request

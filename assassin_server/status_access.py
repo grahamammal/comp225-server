@@ -26,26 +26,25 @@ def is_alive():
             Players.is_alive
         ).filter_by(
             player_id = player_id
-        ).first().is_alive
+        ).first()
 
     if is_alive is None:
         return (internal_error(4), 403)
 
-    return jsonify(row_to_dict(is_alive))
+    return jsonify({'is_alive':is_alive.is_alive})
 
 @bp.route('/game_state', methods=['POST'])
 def is_game_started():
     content=request.get_json()
     game_code=content["game_code"]
 
-    db=get_db()
-    game_state=db.execute(
-        'SELECT game_state FROM games'
-        ' WHERE game_code=?',
-        (game_code,)
-    ).fetchone()
+    game_state = db.session.query(
+            Games.game_state
+        ).filter_by(
+            game_code = game_code
+        ).first()
 
     if game_state is None:
         return(internal_error(5), 400)
 
-    return jsonify(row_to_dict(game_state))
+    return jsonify({'game_state':game_state.game_state})
