@@ -233,7 +233,7 @@ def test_quit_game(app, client, num_players, starting_game_state, expected_game_
         # send fake info if the player doesn't exist
         headers=headers = {'Authorization' : 'Bearer ' + 'dyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1NTU2MjA3MTMsIm5iZiI6MTU1NTYyMDcxMywianRpIjoiZTc1YTU5MzEtODU2Yy00OTcwLThiZmItNDRhMWU2OTI3OGJiIiwiZXhwIjoxNTU1NjIxNjEzLCJpZGVudGl0eSI6NSwiZnJlc2giOmZhbHNlLCJ0eXBlIjoiYWNjZXNzIn0.4lpagzD_gVJqWWXW37CkzuccHYoMtjVOQ7j08SXbb_0'}
         response=client.get(
-            '/player_access/request_kill_code',
+            '/player_access/quit_game',
             headers=headers
         )
 
@@ -245,27 +245,28 @@ def test_quit_game(app, client, num_players, starting_game_state, expected_game_
         player_targeting_quitter_id = None
 
         with app.app_context():
-            game_code = get_db().execute(
-                'SELECT game_code FROM players'
-                ' WHERE player_first_name = ? AND player_last_name = ?',
-                (players_info[0]['player_first_name'], players_info[0]['player_last_name'])
-            ).fetchone()[0]
+            game_code = db.session.query(
+                    Players.game_code
+                ).filter_by(
+                    player_first_name = players_info[0]['player_first_name'],
+                    player_last_name = players_info[0]['player_last_name']
+                ).first().game_code
 
         if starting_game_state == 1:
             with app.app_context():
-                target_id=get_db().execute(
-                    'SELECT target_id FROM players'
-                    ' WHERE player_first_name = ? AND player_last_name = ?',
-                    (players_info[0]['player_first_name'], players_info[0]['player_last_name'])
-                ).fetchone()[0]
+                target_id = db.session.query(
+                        Players.target_id
+                    ).filter_by(
+                        player_first_name = players_info[0]['player_first_name'],
+                        player_last_name = players_info[0]['player_last_name']
+                    ).first().target_id
 
-                player_targeting_quitter_id = get_db().execute(
-                    'SELECT player_id FROM players'
-                    ' WHERE target_first_name = ? AND target_last_name = ?',
-                    (players_info[0]['player_first_name'], players_info[0]['player_last_name'])
-                ).fetchone()[0]
-
-
+                player_targeting_quitter_id = db.session.query(
+                        Players.player_id
+                    ).filter_by(
+                        target_first_name = players_info[0]['player_first_name'],
+                        target_last_name = players_info[0]['player_last_name']
+                    ).first().player_id
 
         headers = {'Authorization' : 'Bearer ' + players_info[0]['access_token']}
         response=client.get(
@@ -278,21 +279,22 @@ def test_quit_game(app, client, num_players, starting_game_state, expected_game_
 
     if num_players is not None:
         with app.app_context():
-            assert get_db().execute(
-                'SELECT * FROM players'
-                ' WHERE player_first_name = ? AND player_last_name = ?',
-                (players_info[0]['player_first_name'], players_info[0]['player_last_name'])
-            ).fetchone() is None
+            assert db.session.query(
+                    Players.player_id
+                ).filter_by(
+                    player_first_name = players_info[0]['player_first_name'],
+                    player_last_name = players_info[0]['player_last_name']
+                ).scalar() is None
 
-            assert get_db().execute(
-                'SELECT game_state FROM games'
-                ' WHERE game_code = ?',
-                (game_code, )
-            ).fetchone()[0] == expected_game_state
+            assert db.session.query(
+                    Games.game_state
+                ).filter_by(
+                    game_code = game_code
+                ).first().game_state == expected_game_state
 
             if starting_game_state == 1:
-                  assert get_db().execute(
-                      'SELECT target_id FROM players'
-                      ' WHERE player_id = ?',
-                      (player_targeting_quitter_id, )
-                  ).fetchone()[0] ==  target_id
+                  assert db.session.query(
+                          Players.target_id
+                      ).filter_by(
+                          player_id = player_targeting_quitter_id
+                      ).first().target_id == target_id

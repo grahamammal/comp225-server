@@ -10,6 +10,8 @@ from flask_jwt_extended import (
 )
 
 from assassin_server.__init__ import internal_error
+from assassin_server.db_models import Players, Games, db, table_to_dict
+
 
 bp = Blueprint('status_access', __name__, url_prefix='/status_access')
 
@@ -19,12 +21,12 @@ def is_alive():
     #finds the id of whoever sent the token
     player_id = get_jwt_identity()
 
-    db=get_db()
-    is_alive=db.execute(
-        'SELECT is_alive FROM players'
-        ' WHERE player_id=?',
-        (player_id,)
-    ).fetchone()
+
+    is_alive = db.session.query(
+            Players.is_alive
+        ).filter_by(
+            player_id = player_id
+        ).first().is_alive
 
     if is_alive is None:
         return (internal_error(4), 403)

@@ -17,13 +17,15 @@ def test_is_alive(app, client, expected_is_alive, expected_error_id, expected_st
 
         # set player to dead or alive
         with app.app_context():
-            get_db().execute(
-                'UPDATE players'
-                ' SET is_alive = ?'
-                ' WHERE player_first_name = ? AND player_last_name = ?',
-                (expected_is_alive, players_info[0].get('player_first_name'), players_info[0].get('player_last_name'))
-            )
-            get_db().commit()
+            player = db.session.query(
+                    Players
+                ).filter_by(
+                    player_first_name = players_info[0]['player_first_name'],
+                    player_last_name = players_info[0]['player_last_name']
+                ).first()
+
+            player.is_alive = (1 == True)
+            db.session.commit()
 
         # send our request
         headers=headers = {'Authorization' : 'Bearer ' + players_info[0]['access_token']}

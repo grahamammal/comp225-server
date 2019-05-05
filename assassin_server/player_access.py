@@ -289,55 +289,57 @@ def quit_game():
     #finds the id of whoever sent the token
     player_id = get_jwt_identity()
 
-    db=get_db()
-
     # get the players game
-    game_code = db.execute(
-        'SELECT game_code FROM players'
-        ' WHERE player_id = ?',
-        (player_id, )
-    ).fetchone()[0]
+    game_code = db.session.query(
+            Players.game_code
+        ).filter_by(
+            player_id = player_id
+        ).first().game_code
 
     # get the players target
-    target_info = db.execute(
-        'SELECT target_first_name, target_last_name, target_id FROM players'
-        ' WHERE player_id = ?',
-        (player_id, )
-    ).fetchone()
+    target_info = db.session.query(
+            Players.target_first_name,
+            Players.target_last_name,
+            Players.target_id
+        ).filter_by(
+            player_id = player_id
+        ).first()
 
     # remove the player from the game
-    db.execute(
-        'DELETE FROM players'
-        ' WHERE player_id = ?',
-        (player_id, )
-    )
-    db.commit()
+    db.session.query(
+            Players
+        ).filter_by(
+            player_id = player_id
+        ).delete()
+
 
     #check if the game is started
     if target_info[0] is not None:
         # set the target of the quitter to be the quitters target
-        db.execute(
-            'UPDATE players'
-            ' SET target_first_name = ?, target_last_name = ?, target_id = ?'
-            ' WHERE target_id = ?',
-            (target_info[0], target_info[1], target_info[2], player_id)
-        )
-        db.commit()
+        player = db.session.query(
+                Players
+            ).filter_by(
+                target_id = player_id
+            ).first()
+        player.target_first_name = target_info.target_first_name
+        player.target_last_name = target_info.target_last_name
+        player.target_id = target_info.target_id
 
         # if theres only one player left set the game to won
-        all_players = db.execute(
-            'SELECT * FROM players'
-            ' WHERE game_code = ?',
-            (game_code, )
-        ).fetchall()
+        all_players = db.session.query(
+                Players.player_id
+            ).filter_by(
+                game_code = game_code
+            ).all()
 
         if len(all_players) == 1:
-            db.execute(
-                'UPDATE games'
-                ' SET game_state = 2'
-                ' WHERE game_code = ?',
-                (game_code, )
-            )
-            db.commit()
+            game = db.session.query(
+                    Games
+                ).filter_by(
+                    game_code = game_code
+                ).first()
+            game.game_state = 2
 
+
+    db.session.commit()
     return jsonify({'message' : 'success'}), 200
