@@ -153,6 +153,180 @@ def setup_db(db):
 
     db.create_all()
 
+    # add our fake players
+    # I don't know how to do bulk insert with flask-sqlalchemy so I'll be doing it one by one
+    player = Players(
+        player_kill_code = 1001,
+        player_first_name = 'test1',
+        player_last_name = 'test1',
+
+        target_id = 3,
+        target_first_name = 'test3',
+        target_last_name = 'test3',
+
+        is_alive = True,
+        is_creator = True,
+
+        game_code = 1000
+        )
+    db.session.add(player)
+
+    player = Players(
+        player_kill_code = 1002,
+        player_first_name = 'test2',
+        player_last_name = 'test2',
+
+        target_id = 1,
+        target_first_name = 'test1',
+        target_last_name = 'test1',
+
+        is_alive = True,
+        is_creator = False,
+
+        game_code = 1000
+        )
+    db.session.add(player)
+
+    player = Players(
+        player_kill_code = 1003,
+        player_first_name = 'test3',
+        player_last_name = 'test3',
+
+        target_id = 2,
+        target_first_name = 'test2',
+        target_last_name = 'test2',
+
+        is_alive = True,
+        is_creator = False,
+
+        game_code = 1000
+        )
+    db.session.add(player)
+
+    player = Players(
+        player_kill_code = None,
+        player_first_name = 'test4',
+        player_last_name = 'test4',
+
+        target_id = None,
+        target_first_name = None,
+        target_last_name = None,
+
+        is_alive = True,
+        is_creator = True,
+
+        game_code = 1001
+        )
+    db.session.add(player)
+
+    player = Players(
+        player_kill_code = 1005,
+        player_first_name = 'test5',
+        player_last_name = 'test5',
+
+        target_id = 6,
+        target_first_name = 'test5',
+        target_last_name = 'test5',
+
+        is_alive = True,
+        is_creator = True,
+
+        game_code = 1002
+        )
+    db.session.add(player)
+
+    player = Players(
+        player_kill_code = 1006,
+        player_first_name = 'test6',
+        player_last_name = 'test6',
+
+        target_id = 5,
+        target_first_name = 'test5',
+        target_last_name = 'test5',
+
+        is_alive = True,
+        is_creator = False,
+
+        game_code = 1002
+        )
+    db.session.add(player)
+
+    player = Players(
+        player_kill_code = None,
+        player_first_name = 'test7',
+        player_last_name = 'test7',
+
+        target_id = None,
+        target_first_name = None,
+        target_last_name = None,
+
+        is_alive = False,
+        is_creator = False,
+
+        game_code = 1001
+        )
+    db.session.add(player)
+
+    player = Players(
+        player_kill_code = 1008,
+        player_first_name = 'test8',
+        player_last_name = 'test8',
+
+        target_id = 8,
+        target_first_name = 'test8',
+        target_last_name = 'test8',
+
+        is_alive = True,
+        is_creator = True,
+
+        game_code = 1003
+        )
+    db.session.add(player)
+
+    # add our fake games
+
+    game = Games(
+        game_name = 'test_game',
+        game_rules = 'no rules',
+        game_code = 1000,
+        game_state = 1
+        )
+    db.session.add(game)
+
+    game = Games(
+        game_name = 'player_access_test_game',
+        game_rules = None,
+        game_code = 1001,
+        game_state = 0
+        )
+    db.session.add(game)
+
+    game = Games(
+        game_name = 'player_access_test_got',
+        game_rules = 'nope',
+        game_code = 1002,
+        game_state = 1
+        )
+    db.session.add(game)
+
+    game = Games(
+        game_name = 'player_access_test_game_state',
+        game_rules = 'nope',
+        game_code = 1003,
+        game_state = 2
+        )
+    db.session.add(game)
+
+    game = Games(
+        game_name = 'another_test_game',
+        game_rules = 'still no rules',
+        game_code = 9999,
+        game_state = 0
+        )
+    db.session.add(game)
+    db.session.commit()
+
+
 
 # adds a player and returns a dictonary of relevant information
 def add_test_player(client, is_creator, game_code):

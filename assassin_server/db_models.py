@@ -35,6 +35,9 @@ class Games(db.Model):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
 def table_to_dict(table):
+
     output = []
     for row in table:
         output.append(row.as_dict())
+
+    return output

@@ -10,6 +10,7 @@ from flask_jwt_extended import (
 
 from assassin_server.__init__ import internal_error
 from assassin_server import db_models
+from assassin_server.db_models import table_to_dict
 db = db_models.db
 
 bp = Blueprint('creator_access', __name__, url_prefix='/creator_access')
@@ -90,7 +91,7 @@ def start_hunt():
 
     #checks if the player is the only player
     if len(db.session.query(
-            db_models.Players.id
+            db_models.Players.player_id
         ).filter_by(
             game_code = game_code
         ).all())<2:
@@ -112,7 +113,7 @@ def start_hunt():
         player_from_db.target_last_name = player['target_last_name']
         player_from_db.target_id = player['target_id']
 
-    db.commit()
+    db.session.commit()
 
 
     #update game_state
@@ -121,7 +122,7 @@ def start_hunt():
         ).filter_by(
             game_code = game_code
         ).first()
-    db.commit()
+    db.session.commit()
 
 
     return jsonify({'win' : False}), 200
@@ -132,36 +133,30 @@ def player_list():
     #finds the id of whoever sent the token
     player_id = get_jwt_identity()
 
-    db = get_db()
-    creator_info = db.execute(
-        'SELECT is_creator, game_code FROM players'
-        ' WHERE player_id = ?',
-        (player_id,)
-    ).fetchone()
+    creator_info = db.session.query(
+            db_models.Players.is_creator,
+            db_models.Players.game_code
+        ).filter_by(
+            player_id = player_id
+        ).first()
 
-    if creator_info is None:
-        return (internal_error(4), 403)
-
-
-    if creator_info[0] == 0:
+    if not creator_info.is_creator :
         return (internal_error(6), 403)
 
-    player_list=db.execute(
-        'SELECT player_first_name, player_last_name FROM players'
-        ' WHERE game_code = ?',
-        (creator_info[1],)
-    ).fetchall()
+    player_list = db.session.query(
+            db_models.Players.player_first_name,
+            db_models.Players.player_last_name
+        ).filter_by(
+            game_code = creator_info.game_code
+        ).all()
 
-    output=table_to_dict(player_list)
-    return jsonify({"players": output})
+    return jsonify({"players": player_list})
 
 
 
 
 #gives each player a target that fits the rules of the game
 def generate_targets(game_code):
-    db=get_db()
-
 
     players_with_target=[]
     players_without_target=db_models.table_to_dict(
