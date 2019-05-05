@@ -20,8 +20,6 @@ def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
         SECRET_KEY=b'_5#y2L"F4Q8z\n\xec]/',
-        SQLALCHEMY_DATABASE_URI='postgresql://postgres:mylittlepostgres@localhost:5432/assassin_dev_server',
-        SQLALCHEMY_TRACK_MODIFICATIONS = False
     )
 
 
@@ -32,7 +30,8 @@ def create_app(test_config=None):
         # load the test config if passed in
         app.config.from_mapping(test_config)
 
-
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
     # ensure the instance folder exists
     try:
         os.makedirs(app.instance_path)
@@ -55,7 +54,7 @@ def create_app(test_config=None):
 
     #adds database to the app
     db_models.db.init_app(app)
-    
+
 
 
     # a simple page that says hello

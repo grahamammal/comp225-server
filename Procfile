@@ -1,1 +1,1 @@
-web: flask init-db && gunicorn assassin_server.deploy:app
+web: gunicorn assassin_server.deploy:app
