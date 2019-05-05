@@ -149,7 +149,7 @@ POST http://<localhost>/player_access/add_player
     {
         "player_first_name": "example"
         "player_last_name": "example"
-        "is_creator": 0
+        "is_creator": false
         "game_code": 9999
     }
 ```
@@ -348,7 +348,7 @@ None
 ---
 ```
 {
-    "is_alive": 1
+    "is_alive": true
 }
 ```
 
@@ -406,9 +406,8 @@ A JSON list, where each entry contains the following:
     "target_id": 0
     "target_first_name":"example"
     "target_last_name":"example"
-    "is_alive": 1
-    "is_creator": 0
-    "disputed_got": 0
+    "is_alive": true
+    "is_creator": false
     "game_code": 9999
 }
 ```
@@ -451,8 +450,5 @@ The assassin-server API uses the following error codes:
 | ------ | ------ |
 | 400 | Bad Request -- Your request was bad, maybe there is no such player or game, a player with that name already exists, etc. Check the server code to find out why. |
 | 403 | Forbidden -- You don't have the privileges to make that request |
+| 422 | Malformed JWT -- Your JWT is broken somehow |
 | 500 | Internal Server Error -- Something went wrong with the server! Oh no!!
-<!--stackedit_data:
-eyJoaXN0b3J5IjpbLTExMDY0MTA2NjksLTE2MDQ4ODk3NTBdfQ
-==
--->
