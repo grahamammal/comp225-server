@@ -198,31 +198,6 @@ None
 }
 ```
 
-### Request Kill Code
-
-This endpoint will return your kill code.
-
-#### HTTP Request
----
-```
-GET http://<localhost>/player_access/request_kill_code
-	headers: Authorization: "Bearer dyJ0eXAiOiJKV1Q..."
-```
-
-#### URL Parameters
----
-
-None
-
-#### Return Value
----
-
-```
-{
-    "player_kill_code" : 1234
-}
-```
-
 ### Remove From Game
 
 Remove yourself from the game after you've died.

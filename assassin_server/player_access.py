@@ -206,46 +206,19 @@ def request_target():
     #finds the id of whoever sent the token
     player_id = get_jwt_identity()
 
+    target = db.session.query(
+            Players.target_first_name,
+            Players.target_last_name
+        ).filter_by(
+            player_id = player_id
+        ).first()
 
-
-    db=get_db()
-    target= db.execute(
-        'SELECT target_first_name, target_last_name FROM players'
-        ' WHERE player_id = ?',
-        (player_id,)
-    ).fetchone()
-
-
-
-    if target[0] is None and target[1] is None:
+    if target.target_first_name is None and target.target_last_name is None:
         return (internal_error(5), 400)
 
-    output=row_to_dict(target)
-    return jsonify(output)
 
-#Returns the player's kill code
-@bp.route('/request_kill_code', methods=['GET'])
-@jwt_required
-def request_kill_code():
-    #finds the id of whoever sent the token
-    player_id = get_jwt_identity()
+    return jsonify({'target_first_name' : target.target_first_name, 'target_last_name' : target.target_last_name})
 
-    db = get_db()
-
-    player_kill_code= db.execute(
-        'SELECT player_kill_code FROM players'
-        ' WHERE player_id = ?',
-        (player_id,)
-    ).fetchone()
-
-    if player_kill_code is None:
-        return (internal_error(4), 403)
-
-    if player_kill_code[0] is None:
-        return (internal_error(11), 400)
-
-    output=row_to_dict(player_kill_code)
-    return jsonify(output)
 
 @bp.route('/remove_from_game', methods=['GET'])
 @jwt_required
@@ -254,60 +227,60 @@ def remove_from_game():
     #finds the id of whoever sent the token
     player_id = get_jwt_identity()
 
-    db=get_db()
-
     #check if the player won the game already
-    game_code=db.execute(
-        'SELECT game_code FROM players'
-        ' WHERE player_id = ?',
-        (player_id, )
-    ).fetchone()
+    game_code = db.session.query(
+            Players.game_code
+        ).filter_by(
+            player_id = player_id
+        ).first()
 
     if game_code is None:
         return (internal_error(4), 403)
 
-    all_players=db.execute(
-        'SELECT * FROM players'
-        ' WHERE game_code = ? AND player_id != ? AND is_alive == 1',
-        (game_code[0], player_id)
-    ).fetchone()
+    all_players = db.session.query(
+            Players.player_id
+        ).filter_by(
+            game_code = game_code.game_code,
+            is_alive = True,
+        ).all()
 
-    if all_players is None:
-        db.execute(
-            'DELETE FROM players'
-            ' WHERE player_id = ?',
-            (player_id, )
-        )
-        db.commit()
+    if len(all_players) == 1:
+        player = db.session.query(
+                Players
+            ).filter_by(
+                player_id = player_id
+            ).first()
+        db.session.delete(player)
 
-        db.execute(
-            'DELETE FROM games'
-            ' WHERE game_code = ?',
-            (game_code[0], )
-        )
-        db.commit()
+        game = db.session.query(
+                Games
+            ).filter_by(
+                game_code = game_code.game_code
+            ).first()
+        db.session.delete(game)
+        db.session.commit()
 
         return jsonify({'message' : 'success'}), 200
 
 
-    is_alive = db.execute(
-        'SELECT is_alive FROM players'
-        ' WHERE player_id = ?',
-        (player_id,)
-    ).fetchone()[0]
+    is_alive = db.session.query(
+            Players.is_alive
+        ).filter_by(
+            player_id = player_id
+        ).first().is_alive
 
     #check if player is Alive
-    if str(is_alive) == str(1):
+    if is_alive:
         return (internal_error(9), 400)
 
-
     #remove them from the game
-    db.execute(
-        'DELETE FROM players'
-        ' WHERE player_id = ?',
-        (player_id, )
-    )
-    db.commit()
+    player = db.session.query(
+            Players
+        ).filter_by(
+            player_id = player_id
+        ).first()
+    db.session.delete(player)
+    db.session.commit()
 
     return jsonify({'message' : 'success'}), 200
 

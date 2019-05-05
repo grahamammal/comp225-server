@@ -175,38 +175,6 @@ def test_request_target(app, client, game_state, expected_error_id, expected_sta
 
 
 @pytest.mark.parametrize(
-    ('game_state', 'expected_error_id', 'expected_status_code'),
-    (
-        (1, None, 200), # player has a kill code
-        (None, 12, 422), # player doesn't exist
-    )
-)
-def test_request_kill_code(client, game_state, expected_error_id, expected_status_code):
-    if game_state is None:
-        # send fake info if the player doesn't exist
-        headers=headers = {'Authorization' : 'Bearer ' + 'dyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1NTU2MjA3MTMsIm5iZiI6MTU1NTYyMDcxMywianRpIjoiZTc1YTU5MzEtODU2Yy00OTcwLThiZmItNDRhMWU2OTI3OGJiIiwiZXhwIjoxNTU1NjIxNjEzLCJpZGVudGl0eSI6NSwiZnJlc2giOmZhbHNlLCJ0eXBlIjoiYWNjZXNzIn0.4lpagzD_gVJqWWXW37CkzuccHYoMtjVOQ7j08SXbb_0'}
-        response=client.get(
-            '/player_access/request_kill_code',
-            headers=headers
-        )
-    else:
-        # create a test game
-        players_info = create_test_game(client, 3, game_state)
-
-        headers = {'Authorization' : 'Bearer ' + players_info[0]['access_token']}
-        response=client.get(
-            '/player_access/request_kill_code',
-            headers=headers
-        )
-
-    assert response.status_code == expected_status_code
-    assert response.get_json().get('error_id') == expected_error_id
-
-    # if we expect a target
-    if expected_status_code is 200:
-        assert response.get_json().get('player_kill_code') is not None
-
-@pytest.mark.parametrize(
     ('num_players', 'is_alive', 'expected_error_id', 'expected_status_code'),
     (
         (3, False, None, 200), # the player is dead and should be removed
@@ -221,7 +189,7 @@ def test_remove_from_game(app, client, num_players, is_alive, expected_error_id,
         # send fake info if the player doesn't exist
         headers=headers = {'Authorization' : 'Bearer ' + 'dyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1NTU2MjA3MTMsIm5iZiI6MTU1NTYyMDcxMywianRpIjoiZTc1YTU5MzEtODU2Yy00OTcwLThiZmItNDRhMWU2OTI3OGJiIiwiZXhwIjoxNTU1NjIxNjEzLCJpZGVudGl0eSI6NSwiZnJlc2giOmZhbHNlLCJ0eXBlIjoiYWNjZXNzIn0.4lpagzD_gVJqWWXW37CkzuccHYoMtjVOQ7j08SXbb_0'}
         response=client.get(
-            '/player_access/request_kill_code',
+            '/player_access/remove_from_game',
             headers=headers
         )
 
@@ -232,13 +200,15 @@ def test_remove_from_game(app, client, num_players, is_alive, expected_error_id,
         if not is_alive:
         # force dead players to be dead
             with app.app_context():
-                get_db().execute(
-                    'UPDATE players'
-                    ' SET is_alive = 0'
-                    ' WHERE player_first_name = ? AND player_last_name = ?',
-                    (players_info[0]['player_first_name'], players_info[0]['player_last_name'])
-                )
-                get_db().commit()
+                player = db.session.query(
+                        Players
+                    ).filter_by(
+                        player_first_name = players_info[0]['player_first_name'],
+                        player_last_name = players_info[0]['player_last_name']
+                    ).first()
+                player.is_alive = False
+
+                db.session.commit()
 
         headers = {'Authorization' : 'Bearer ' + players_info[0]['access_token']}
         response=client.get(
