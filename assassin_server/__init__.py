@@ -11,8 +11,9 @@ from flask_jwt_extended import (
 
 
 
-db = SQLAlchemy()
 from assassin_server import db_models
+
+
 
 def create_app(test_config=None):
     """Creates app with specified config"""
@@ -53,7 +54,9 @@ def create_app(test_config=None):
         return internal_error(13), 401
 
     #adds database to the app
-    db.init_app(app)
+    db_models.db.init_app(app)
+    
+
 
     # a simple page that says hello
     @app.route('/hello')

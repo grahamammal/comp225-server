@@ -8,6 +8,8 @@ from flask_jwt_extended import (
 )
 
 from assassin_server.__init__ import internal_error
+from assassin_server import db_models
+db = db_models.db
 
 bp = Blueprint('player_access', __name__, url_prefix='/player_access')
 
@@ -23,63 +25,72 @@ def add_player():
     game_code=content['game_code']
 
 
-    db=get_db()
 
     #checks if the game exists
-    if db.execute(
-        'SELECT game_id FROM games'
-        ' WHERE game_code = ?',
-        (game_code,)
-    ).fetchone() is None:
+    if  db.session.query(
+            db_models.Games.game_id
+        ).filter_by(
+            game_code=game_code
+        ).scalar() is None:
         return (internal_error(0), 400)
 
+
     #checks if the game already started
-    if db.execute(
-        'SELECT game_state FROM games'
-        ' WHERE game_code = ?',
-        (game_code,)
-    ).fetchone()[0] is 1:
+    if  db.session.query(
+            db_models.Games.game_state
+        ).filter_by(
+            game_code=game_code
+        ).first().game_state == 1:
         return (internal_error(1), 400)
 
+
     #checks if player already exists
-    if db.execute(
-        'SELECT player_id FROM players'
-        ' WHERE player_first_name = ? AND player_last_name=? AND game_code = ?',
-        (player_first_name, player_last_name, game_code)
-    ).fetchone() is not None:
+    if db.session.query(
+            db_models.Players.player_id
+        ).filter_by(
+            player_first_name = player_first_name,
+            player_last_name = player_last_name,
+            game_code = game_code
+        ).scalar() is not None:
         return (internal_error(2), 400)
 
 
     #checks if there is already a creator of the game
-    if db.execute(
-        'SELECT player_id FROM players'
-        ' WHERE game_code = ? AND is_creator = 1',
-        (game_code,)
-    ).fetchone() is not None and str(is_creator) == str(1):
+    if db.session.query(
+            db_models.Players.player_id
+        ).filter_by(
+            game_code = game_code,
+            is_creator = True
+        ).scalar() is not None and str(is_creator) == str(1):
         return (internal_error(3), 400)
 
     #adds player to database if nothing went wrong
 
-    used = False
     min_kill_code = 1000
     max_kill_code = 9999
 
     player_kill_code= random.randint(min_kill_code, max_kill_code)
 
-    db.execute(
-        'INSERT INTO players'
-        ' (player_first_name, player_last_name,is_creator, game_code, is_alive, disputed_Got, player_kill_code)'
-        ' VALUES (?, ?, ?, ?, 1, 0, ?)',
-        (player_first_name, player_last_name, is_creator, game_code, player_kill_code)
-    )
-    db.commit()
+
+    player = db_models.Players(
+        player_first_name = player_first_name,
+        player_last_name = player_last_name,
+        is_creator = str(is_creator) == str(1),
+        is_alive = True,
+        player_kill_code = player_kill_code,
+        game_code = game_code
+        )
+    db.session.add(player)
+    db.session.commit()
 
 
-    player_id=db.execute(
-        'SELECT player_id FROM players'
-        ' WHERE player_first_name = ? AND player_last_name=? AND game_code = ?',
-        (player_first_name, player_last_name, game_code)
-    ).fetchone()[0]
+    player_id = db.session.query(
+            db_models.Players.player_id
+        ).filter_by(
+            player_first_name=player_first_name,
+            player_last_name=player_last_name,
+            game_code=game_code
+        ).first().player_id
 
     access_token=create_access_token(identity=player_id)
 

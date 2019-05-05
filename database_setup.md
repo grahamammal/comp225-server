@@ -22,3 +22,11 @@ db.session.add(me)
 db.session.commit()
 
 return jsonify(db_models.Players.query.filter_by(player_first_name='test').first().as_dict())
+
+cd Documents\GitHub\comp225-server
+venv\Scripts\activate
+pytest tests\test_player_access.py -k test_add_player
+
+
+for testing:
+set TEST_DATABASE_URL=postgresql://postgres@localhost:5432/assassin_test_server

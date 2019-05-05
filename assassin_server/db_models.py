@@ -1,7 +1,10 @@
 from flask_sqlalchemy import SQLAlchemy
-from assassin_server.__init__ import db
+
+db = SQLAlchemy()
 
 class Players(db.Model):
+    __tablename__ = 'players'
+
     player_id = db.Column(db.Integer, primary_key = True, autoincrement = True)
     player_kill_code = db.Column(db.Integer)
     player_first_name = db.Column(db.String(50), nullable = False)
@@ -20,6 +23,7 @@ class Players(db.Model):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns} # from : https://stackoverflow.com/questions/5022066/how-to-serialize-sqlalchemy-result-to-json
 
 class Games(db.Model):
+    __tablename__ = 'games'
     game_id = db.Column(db.Integer, primary_key = True, autoincrement = True)
     game_name = db.Column(db.String(100), nullable = False)
     game_rules = db.Column(db.String(100))
@@ -29,3 +33,8 @@ class Games(db.Model):
 
     def as_dict(self):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+
+def table_to_dict(table):
+    output = []
+    for row in table:
+        output.append(row.as_dict())

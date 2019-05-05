@@ -4,7 +4,7 @@ import random
 import string
 from flask import session
 
-from assassin_server.__init__ import db
+
 from assassin_server import db_models
 from conftest import create_test_game
 

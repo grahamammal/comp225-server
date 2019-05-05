@@ -1,7 +1,7 @@
 import pytest
 from flask import session
 from conftest import create_test_game
-
+ 
 @pytest.mark.parametrize(
     ('player_first_name', 'player_last_name',
      'is_creator', 'game_code',
@@ -15,11 +15,13 @@ from conftest import create_test_game
         ('add4', 'test', 1, 1001, 3, 400),#creator already exists
     )
 )
-def test_add_player(client,
+def test_add_player(db_session, client,
                     player_first_name, player_last_name,
                     is_creator, game_code,
                     expected_error_id,
                     expected_status_code):
+
+
     response=client.post(
         '/player_access/add_player',
         json={'player_first_name':player_first_name,
