@@ -22,7 +22,7 @@ else:
 
 pytest_plugins = ['pytest-flask-sqlalchemy']
 
-# much of conftest adapted from https://github.com/ClearcodeHQ/pytest-postgresql
+# much of conftest adapted from https://pypi.org/project/pytest-flask-sqlalchemy/
 # sets up a postgresql database
 @pytest.fixture(scope='session')
 def database(request):
