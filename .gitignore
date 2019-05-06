@@ -117,3 +117,6 @@ dmypy.json
 
 #ignore session stuff
 flask_session/
+
+# Mac formatting thing
+.DS_Store

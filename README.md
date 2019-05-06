@@ -46,7 +46,7 @@ Then install the dependencies:
 pip install -r requirements.txt
 ```
 
-Before running the app, you'll need to setup a postgreSQL database. First, install postgreSQL on your machine. Then create a database for the server to connect to. Once this is done, change the constant connecting to the database to your database URI. In `__init.py__`,  
+Before running the app, you'll need to setup a postgreSQL database. First, install postgreSQL on your machine. Then create a database for the server to connect to. Once this is done, change the constant connecting to the database to your database URI. In `__init.py__`:    
 ```
 app.config['SQLALCHEMY_DATABASE_URI'] = <your postgreSQL link>
 ```
@@ -100,6 +100,7 @@ export TEST_DATABASE_URL=<ppostgreSQL test link>
 pytest
 ```
 
+On Windows:
 ```
 set TEST_DATABASE_URL=<ppostgreSQL test link>
 pytest
