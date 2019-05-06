@@ -8,9 +8,9 @@ __A project by:__
 __Table of Contents__
 
 - [Description](#Description)  
-- [Local Setup](#Local Setup)   
+- [Local Setup](#Local-Setup)   
 - [Testing](#Testing)   
-- [Heroku Setup](#Heroku Setup)
+- [Heroku Setup](#Heroku-Setup)
 
 ## Description
 A server for the Assassin project by group Elcoanja. It acts as an API for the client side that stores the game state and player information. Documentation of the API can be found [here](https://github.com/grahamammal/comp225-server/blob/master/Assassin%20Server%20API.md#http-request-5).  The client side can be accessed from [here](https://github.com/jacobdweightman/comp225-assassin). The server is built using flask with a postgreSQL database, and is hosted on [Heroku](https://elcoanja.herokuapp.com/). The initial code relied heavily on the tutorial from [Flask](http://flask.pocoo.org/docs/1.0/tutorial/).
