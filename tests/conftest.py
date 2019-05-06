@@ -73,11 +73,6 @@ def client(app):
 def runner(app):
     return app.test_cli_runner()
 
-
-def test_tests():
-    assert True == True
-
-
 def create_test_game(client, num_players, game_state):
     # create the fake game
     create_game_response=client.post(
