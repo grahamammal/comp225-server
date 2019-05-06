@@ -22,12 +22,10 @@ else:
 
 pytest_plugins = ['pytest-flask-sqlalchemy']
 
-
+# much of conftest adapted from https://github.com/ClearcodeHQ/pytest-postgresql
+# sets up a postgresql database
 @pytest.fixture(scope='session')
 def database(request):
-    '''
-    Create a Postgres database for the tests, and drop it when the tests are done.
-    '''
     pg_host = DB_OPTS.get("host")
     pg_port = DB_OPTS.get("port")
     pg_user = DB_OPTS.get("username")
@@ -51,20 +49,20 @@ def app(database):
 
     yield app
 
+
 @pytest.fixture(autouse=True)
 def enable_transactional_tests(db_session):
     pass
 
+
+# Sets up the database connection
 @pytest.fixture(scope='session')
 def _db(app, request):
-    '''
-    Provide the transactional fixtures with access to the database via a Flask-SQLAlchemy
-    database connection.
-    '''
     db = SQLAlchemy(app)
 
     setup_db(db)
     return db
+
 
 @pytest.fixture(scope = 'session')
 def client(app):
@@ -78,6 +76,7 @@ def runner(app):
 
 def test_tests():
     assert True == True
+
 
 def create_test_game(client, num_players, game_state):
     # create the fake game
@@ -117,6 +116,7 @@ def create_test_game(client, num_players, game_state):
     assert len(players_info) == num_players
 
     return players_info
+
 
 def setup_db(db):
     class Players(db.Model):

@@ -26,6 +26,9 @@ def create_app(test_config=None):
 
     if not app.config['TESTING']:
         app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
+    else:
+        app.config['SQLALCHEMY_DATABASE_URI'] = ''
+
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     # ensure the instance folder exists
     try:

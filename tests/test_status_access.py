@@ -12,7 +12,6 @@ from assassin_server.db_models import Players, Games, db, table_to_dict
     )
 )
 def test_is_alive(app, client, expected_is_alive, expected_error_id, expected_status_code):
-
     if expected_is_alive is not None:
         players_info = create_test_game(client, 3, 1)
 
@@ -40,6 +39,7 @@ def test_is_alive(app, client, expected_is_alive, expected_error_id, expected_st
             '/status_access/is_alive',
             headers=headers
         )
+
     assert response.status_code == expected_status_code
 
     assert response.get_json().get('error_id') == expected_error_id
@@ -49,10 +49,10 @@ def test_is_alive(app, client, expected_is_alive, expected_error_id, expected_st
 @pytest.mark.parametrize(
     ('game_code', 'expected_game_state', 'expected_error_id', 'expected_status_code'),
     (
-        (1000, 1, None, 200),
-        (1001, 0, None, 200),
-        (5000, None, 5, 400),
-        (1003, 2, None, 200)
+        (1000, 1, None, 200), # the game is started
+        (1001, 0, None, 200), # the game hasn't started
+        (5000, None, 5, 400), # the game doesn't exist
+        (1003, 2, None, 200) # the game was won
     )
 )
 def test_game_state(client, game_code, expected_game_state, expected_error_id, expected_status_code):

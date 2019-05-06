@@ -4,7 +4,6 @@ import random
 import string
 from flask import session
 
-
 from assassin_server import db_models
 from conftest import create_test_game
 
@@ -28,6 +27,7 @@ def test_create_game(client, game_name, game_rules, expected_error_id, expected_
     else:
         json_data=response.get_json()
         assert 1000<=json_data['game_code'] and json_data['game_code']<10000
+
 
 @pytest.mark.parametrize(
     ('num_players', 'is_creator', 'expected_won_game', 'expected_error_id', 'expected_status_code'),
@@ -69,8 +69,8 @@ def test_start_hunt(client, num_players, is_creator, expected_won_game, expected
     assert response.get_json().get('error_id') == expected_error_id
     assert response.get_json().get('win') == expected_won_game
 
-def generate_player(client, is_creator):
 
+def generate_player(client, is_creator):
     rand_first_name = ''.join([random.choice(string.ascii_letters) for n in range(10)])
     rand_last_name = ''.join([random.choice(string.ascii_letters) for n in range(10)])
     client.post(

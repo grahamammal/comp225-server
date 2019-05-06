@@ -10,11 +10,11 @@ from assassin_server.db_models import Players, Games
      'expected_error_id',
      'expected_status_code'),
     (
-        ('add1', 'test', 0, 9999, None, 200),#valid
-        ('test4', 'test4', 0, 1001, 2, 400),#player already exists
-        ('add2', 'test', 0, 0, 0, 400),#game doesn't exist
-        ('add3', 'test', 0, 1000, 1, 400),#game already started
-        ('add4', 'test', 1, 1001, 3, 400),#creator already exists
+        ('add1', 'test', 0, 9999, None, 200), # valid
+        ('test4', 'test4', 0, 1001, 2, 400), # player already exists
+        ('add2', 'test', 0, 0, 0, 400), # game doesn't exist
+        ('add3', 'test', 0, 1000, 1, 400), # game already started
+        ('add4', 'test', 1, 1001, 3, 400), # creator already exists
     )
 )
 def test_add_player(db_session, client,
@@ -22,8 +22,6 @@ def test_add_player(db_session, client,
                     is_creator, game_code,
                     expected_error_id,
                     expected_status_code):
-
-
     response=client.post(
         '/player_access/add_player',
         json={'player_first_name':player_first_name,
@@ -35,6 +33,7 @@ def test_add_player(db_session, client,
     assert response.status_code==expected_status_code
     if expected_error_id is not None:
         assert response.get_json()['error_id']==expected_error_id
+
 
 @pytest.mark.parametrize(
     ('num_players', 'game_state', 'player_is_alive', 'guessed_correct', 'expected_error_id','expected_status_code'),
@@ -48,7 +47,6 @@ def test_add_player(db_session, client,
     )
 )
 def test_got_target(app, client, num_players, game_state, player_is_alive, guessed_correct, expected_error_id, expected_status_code):
-
     if num_players is None:
         # send fake authorization
         headers=headers = {'Authorization' : 'Bearer ' + 'dyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1NTU2MjA3MTMsIm5iZiI6MTU1NTYyMDcxMywianRpIjoiZTc1YTU5MzEtODU2Yy00OTcwLThiZmItNDRhMWU2OTI3OGJiIiwiZXhwIjoxNTU1NjIxNjEzLCJpZGVudGl0eSI6NSwiZnJlc2giOmZhbHNlLCJ0eXBlIjoiYWNjZXNzIn0.4lpagzD_gVJqWWXW37CkzuccHYoMtjVOQ7j08SXbb_0'}
@@ -90,7 +88,6 @@ def test_got_target(app, client, num_players, game_state, player_is_alive, guess
                 player.is_alive = False
                 db.session.commit()
 
-
         if not guessed_correct:
             # send the wrong kill code
             headers=headers = {'Authorization' : 'Bearer ' + players_info[0]['access_token']}
@@ -116,13 +113,12 @@ def test_got_target(app, client, num_players, game_state, player_is_alive, guess
     assert response.get_json().get('error_id')==expected_error_id
 
 
-
 @pytest.mark.parametrize(
     ('game_code', 'expected_rules', 'expected_name', 'expected_status_code'),
     (
-        (1000, 'no rules', 'test_game', 200),
-        (1001, None, 'player_access_test_game', 200),
-        (5000, None, None, 400)
+        (1000, 'no rules', 'test_game', 200), # a valid game with a name and rules
+        (1001, None, 'player_access_test_game', 200), # a valid game with no rules
+        (5000, None, None, 400) # a game that does not exist
     )
 )
 def test_get_game_info(client, game_code, expected_rules, expected_name, expected_status_code):
@@ -138,6 +134,7 @@ def test_get_game_info(client, game_code, expected_rules, expected_name, expecte
 
     assert response.status_code==expected_status_code
 
+
 @pytest.mark.parametrize(
     ('game_state', 'expected_error_id', 'expected_status_code'),
     (
@@ -147,7 +144,6 @@ def test_get_game_info(client, game_code, expected_rules, expected_name, expecte
     )
 )
 def test_request_target(app, client, game_state, expected_error_id, expected_status_code):
-
     if game_state is None:
         # send fake info if the player doesn't exist
         headers=headers = {'Authorization' : 'Bearer ' + 'dyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1NTU2MjA3MTMsIm5iZiI6MTU1NTYyMDcxMywianRpIjoiZTc1YTU5MzEtODU2Yy00OTcwLThiZmItNDRhMWU2OTI3OGJiIiwiZXhwIjoxNTU1NjIxNjEzLCJpZGVudGl0eSI6NSwiZnJlc2giOmZhbHNlLCJ0eXBlIjoiYWNjZXNzIn0.4lpagzD_gVJqWWXW37CkzuccHYoMtjVOQ7j08SXbb_0'}
@@ -184,7 +180,6 @@ def test_request_target(app, client, game_state, expected_error_id, expected_sta
     )
 )
 def test_remove_from_game(app, client, num_players, is_alive, expected_error_id, expected_status_code):
-
     if num_players is None:
         # send fake info if the player doesn't exist
         headers=headers = {'Authorization' : 'Bearer ' + 'dyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1NTU2MjA3MTMsIm5iZiI6MTU1NTYyMDcxMywianRpIjoiZTc1YTU5MzEtODU2Yy00OTcwLThiZmItNDRhMWU2OTI3OGJiIiwiZXhwIjoxNTU1NjIxNjEzLCJpZGVudGl0eSI6NSwiZnJlc2giOmZhbHNlLCJ0eXBlIjoiYWNjZXNzIn0.4lpagzD_gVJqWWXW37CkzuccHYoMtjVOQ7j08SXbb_0'}
@@ -218,6 +213,7 @@ def test_remove_from_game(app, client, num_players, is_alive, expected_error_id,
 
     assert response.status_code == expected_status_code
     assert response.get_json().get('error_id') == expected_error_id
+
 
 @pytest.mark.parametrize(
     ('num_players', 'starting_game_state', 'expected_game_state', 'expected_error_id', 'expected_status_code'),

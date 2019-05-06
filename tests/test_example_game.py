@@ -6,7 +6,6 @@ from assassin_server.db_models import Players, Games, db, table_to_dict
 
 #For this test we'll run a 10 person game
 def test_mock_game(client, app):
-
     game_size = 10
     # Now we'll start the game!
     players_info = create_test_game(client, game_size, 1)
@@ -46,8 +45,8 @@ def test_mock_game(client, app):
                 assert target_id == creator_id
             current_id=target_id
 
-    # Start getting players
-    # First we'll the first player get their target
+    # start getting players
+    # first we'll the first player get their target
     dead_player_index = player_got_target(app, client, players_info, 0, False)
 
     # now we'll find the index of a player other than the first who is alive. We'll let them win
@@ -117,7 +116,7 @@ def test_mock_game(client, app):
         ).scalar() is None
 
 
-# Get's the target of a player and returns their new target's id
+# get's the target of a player and returns their new target's id
 def player_got_target(app, client, players_info, getter_index, is_winning_got):
 
     headers = {'Authorization' : 'Bearer ' + players_info[getter_index]['access_token']}
