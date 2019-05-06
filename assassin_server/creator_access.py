@@ -3,7 +3,6 @@ import functools, random
 from flask import (
     Blueprint, flash, g, request, jsonify
 )
-
 from flask_jwt_extended import (
     JWTManager, jwt_required, create_access_token, get_jwt_identity
 )
@@ -11,18 +10,16 @@ from flask_jwt_extended import (
 from assassin_server.__init__ import internal_error
 from assassin_server.db_models import Players, Games, db, table_to_dict
 
-
 bp = Blueprint('creator_access', __name__, url_prefix='/creator_access')
-
 
 @bp.route('/create_game', methods=['POST'])
 def create_game():
-    """Creates a game in the data base with the specified name and rules, and returns the game code for that game."""
     content = request.get_json()
 
     game_name=content['game_name']
     game_rules=content['game_rules']
 
+    # make sure the game has a name
     if game_name is None:
         return (internal_error(7), 400)
 
@@ -61,12 +58,10 @@ def create_game():
 
     return jsonify(output)
 
-# Doesn't check if targets already exists. Not sure if this is a problem
-# Trying to reassign targets will make UNIQUE constraint on target id fail, return a 500
+
 @bp.route('/start_hunt', methods=['GET'])
 @jwt_required
 def start_hunt():
-    """Starts the hunting phase of the game"""
     #finds the id of whoever sent the token
     player_id = get_jwt_identity()
 
@@ -128,6 +123,7 @@ def start_hunt():
 
     return jsonify({'win' : False}), 200
 
+
 @bp.route('/player_list', methods=['GET'])
 @jwt_required
 def player_list():
@@ -141,6 +137,7 @@ def player_list():
             player_id = player_id
         ).first()
 
+    # make sure they're the creator
     if not creator_info.is_creator :
         return (internal_error(6), 403)
 
@@ -158,8 +155,6 @@ def player_list():
     return jsonify({"players": output})
 
 
-
-
 #gives each player a target that fits the rules of the game
 def generate_targets(game_code):
 
@@ -172,7 +167,7 @@ def generate_targets(game_code):
             ).all()
     )
 
-    #give a target to the n-1 players
+    #give a target to first the n-1 players
     n=len(players_without_target)
     last_assigned_target_index=0
     for i in range(0, n-1):

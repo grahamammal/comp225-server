@@ -8,12 +8,10 @@ from flask import (
 from assassin_server.creator_access import generate_targets
 from assassin_server.db_models import Players, Games, db, table_to_dict
 
-
 bp = Blueprint('test_access', __name__, url_prefix='/test_access')
 
 @bp.route('/get_all_players', methods=['GET'])
 def get_all_players():
-    """Returns every player in the table for testing"""
     players = db.session.query(
             Players
         ).all()
@@ -23,7 +21,6 @@ def get_all_players():
 
 @bp.route('/get_all_games', methods=['GET'])
 def get_all_games():
-    """Returns all the info on all the games"""
     games = db.session.query(
             Games
         ).all()

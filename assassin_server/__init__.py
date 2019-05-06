@@ -3,17 +3,12 @@ import redis
 
 from flask import Flask, jsonify
 from flask_sqlalchemy import SQLAlchemy
-
 from flask_jwt_extended import (
     JWTManager, jwt_required, create_access_token,
     get_jwt_identity
 )
 
-
-
 from assassin_server import db_models
-
-
 
 def create_app(test_config=None):
     """Creates app with specified config"""
@@ -21,7 +16,6 @@ def create_app(test_config=None):
     app.config.from_mapping(
         SECRET_KEY=b'_5#y2L"F4Q8z\n\xec]/',
     )
-
 
     if test_config is None:
         # load the instance config, if it exists, when not testing
@@ -56,13 +50,10 @@ def create_app(test_config=None):
     #adds database to the app
     db_models.db.init_app(app)
 
-
-
-    # a simple page that says hello
+    # a simple test page that says hello
     @app.route('/hello')
     def hello():
         return 'Hello, World!', 200
-
 
     #adds the player_access blueprint to the app
     from . import player_access
@@ -80,8 +71,8 @@ def create_app(test_config=None):
     from . import status_access
     app.register_blueprint(status_access.bp)
 
-
     return app
+
 
 def internal_error(error_id):
     error_dict={

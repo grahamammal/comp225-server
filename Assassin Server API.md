@@ -108,7 +108,7 @@ POST http://<localhost>/player_access/get_game_info
 ```
 ### Got Target
 
-This endpoint remove your target from the game and provide you with a new one. Will return ```win: True``` if the game is won,  ```win: False``` otherwise.
+This endpoint remove your target from the game and provide you with a new one. Will return ```win: true``` if the game is won,  ```win: false``` otherwise.
 
 
 #### HTTP Request
@@ -157,7 +157,7 @@ POST http://<localhost>/player_access/add_player
 | ------ | ------ | ------|
 | player\_first\_name | None | The first name of the player |
 | player\_last\_name | None | The last name of the player |
-| is_creator | None | 1 if the player created the game, 0 otherwise |
+| is_creator | None | true if the player created the game, false otherwise |
 | game_code | None | The 4 digit code of the game the player is joining |
 
 #### Return Value
@@ -171,7 +171,7 @@ POST http://<localhost>/player_access/add_player
 
 ### Request Target
 
-This endpoint will request the target of the player who navigated here.
+This endpoint will return the name of the target of the player who navigated here.
 
 #### HTTP Request
 ---
@@ -214,7 +214,12 @@ None
 #### Return Value
 ---
 
-None
+
+```
+{
+    "message" : "success"
+}
+```
 
 ### Quit Game
 
@@ -235,7 +240,11 @@ None
 #### Return Value
 ---
 
-None
+```
+{
+    "message" : "success"
+}
+```
 
 ## Game Creator Requests
 ### Create Game
@@ -256,7 +265,7 @@ POST http://<localhost>/creator_access/create_game
 ---
 | Parameter | Default | Description
 | ------ | ------ | ------|
-|  | None | The name of the game |
+| game_name | None | The name of the game |
 | game_rules | None | The rules of the game |
 
 #### Return Value
@@ -269,7 +278,7 @@ POST http://<localhost>/creator_access/create_game
 ```
 
 ### Start Hunt
-This endpoint will start hunting phase of the game of the game creator. This request can only be made by a game creator. Will return ```win: True``` if the game is won,  ```win: False``` otherwise.
+This endpoint will start hunting phase of the game of the game creator. This request can only be made by a game creator. Will return ```win: true``` if the game is won,  ```win: false``` otherwise.
 
 #### HTTP Request
 ---
@@ -310,17 +319,19 @@ None
 ##### Return Value
 ---
 ```
-"players":
-[
-    {
-        "player_first_name": "test1"
-        "player_last_name": "test1"
-    },
-    {
-        "player_first_name": "test2"
-        "player_last_name": "test2"
-    }
-]
+{
+  "players":
+  [
+      {
+          "player_first_name": "test1"
+          "player_last_name": "test1"
+      },
+      {
+          "player_first_name": "test2"
+          "player_last_name": "test2"
+      }
+  ]
+}
 ```
 
 ## Status Requests

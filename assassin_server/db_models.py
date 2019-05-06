@@ -22,6 +22,7 @@ class Players(db.Model):
     def as_dict(self):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns} # from : https://stackoverflow.com/questions/5022066/how-to-serialize-sqlalchemy-result-to-json
 
+
 class Games(db.Model):
     __tablename__ = 'games'
     game_id = db.Column(db.Integer, primary_key = True, autoincrement = True)
@@ -34,8 +35,8 @@ class Games(db.Model):
     def as_dict(self):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
-def table_to_dict(table):
 
+def table_to_dict(table):
     output = []
     for row in table:
         output.append(row.as_dict())

@@ -10,21 +10,16 @@ from flask_jwt_extended import (
 from assassin_server.__init__ import internal_error
 from assassin_server.db_models import Players, Games, db, table_to_dict
 
-
 bp = Blueprint('player_access', __name__, url_prefix='/player_access')
 
 @bp.route('/add_player', methods=['POST'])
 def add_player():
-    """Adds a player with the given name to the game with the given game code"""
-
     content = request.get_json()
 
     player_first_name=content['player_first_name']
     player_last_name=content['player_last_name']
     is_creator=content['is_creator']
     game_code=content['game_code']
-
-
 
     #checks if the game exists
     if  db.session.query(
@@ -34,7 +29,6 @@ def add_player():
         ).scalar() is None:
         return (internal_error(0), 400)
 
-
     #checks if the game already started
     if  db.session.query(
             Games.game_state
@@ -42,7 +36,6 @@ def add_player():
             game_code=game_code
         ).first().game_state == 1:
         return (internal_error(1), 400)
-
 
     #checks if player already exists
     if db.session.query(
@@ -54,7 +47,6 @@ def add_player():
         ).scalar() is not None:
         return (internal_error(2), 400)
 
-
     #checks if there is already a creator of the game
     if db.session.query(
             Players.player_id
@@ -65,12 +57,9 @@ def add_player():
         return (internal_error(3), 400)
 
     #adds player to database if nothing went wrong
-
     min_kill_code = 1000
     max_kill_code = 9999
-
     player_kill_code= random.randint(min_kill_code, max_kill_code)
-
 
     player = Players(
         player_first_name = player_first_name,
@@ -83,7 +72,6 @@ def add_player():
     db.session.add(player)
     db.session.commit()
 
-
     player_id = db.session.query(
             Players.player_id
         ).filter_by(
@@ -94,16 +82,14 @@ def add_player():
 
     access_token=create_access_token(identity=player_id)
 
-
     output = {
         'player_kill_code': player_kill_code,
         'access_token' : access_token
     }
 
-
     return jsonify(output)
 
-# May want to add a way to ensure this is sent from our app
+
 @bp.route('/got_target', methods=['POST'])
 @jwt_required
 def got_target():
@@ -113,7 +99,7 @@ def got_target():
     content=request.get_json()
     guessed_target_kill_code = content['guessed_target_kill_code']
 
-    #checks that the player is alive
+    # checks that the player is alive
     is_alive = db.session.query(
             Players.is_alive
         ).filter_by(
@@ -130,11 +116,11 @@ def got_target():
             player_id = player_id
         ).first().target_id
 
-    #checks that the player has a target
+    # checks that the player has a target
     if target_id is None:
         return (internal_error(5), 400)
 
-    #this is the actual target's kill code
+    # this is the actual target's kill code
     target_kill_code = db.session.query(
             Players.player_kill_code
         ).filter_by(
@@ -162,7 +148,7 @@ def got_target():
 
     target.is_alive = False
 
-    #set the target of your target to your target
+    # set the target of your target to your target
     player = db.session.query(
             Players
         ).filter_by(
@@ -173,7 +159,7 @@ def got_target():
     player.target_id = new_target_info.target_id
 
     db.session.commit()
-    #checks if you just got the second to last player, meaning you won
+    # checks if you just got the second to last player, meaning you won
     if player_id is new_target_info.target_id:
         return jsonify({"win": True}), 200
 
@@ -197,15 +183,13 @@ def get_game_info():
 
     return jsonify({'game_rules': info.game_rules, 'game_name' : info.game_name})
 
-#may want to ensure request is sent from app
 @bp.route('/request_target', methods=['GET'])
 @jwt_required
 def request_target():
-    """Requests the target of the player who made the request, using that players session info"""
-
     #finds the id of whoever sent the token
     player_id = get_jwt_identity()
 
+    # find their target
     target = db.session.query(
             Players.target_first_name,
             Players.target_last_name
@@ -213,17 +197,16 @@ def request_target():
             player_id = player_id
         ).first()
 
+    # makes sure the target exists
     if target.target_first_name is None and target.target_last_name is None:
         return (internal_error(5), 400)
 
-
     return jsonify({'target_first_name' : target.target_first_name, 'target_last_name' : target.target_last_name})
 
-
+# Removes a player from the game after they die
 @bp.route('/remove_from_game', methods=['GET'])
 @jwt_required
 def remove_from_game():
-
     #finds the id of whoever sent the token
     player_id = get_jwt_identity()
 
@@ -260,7 +243,6 @@ def remove_from_game():
 
         return jsonify({'message' : 'success'}), 200
 
-
     is_alive = db.session.query(
             Players.is_alive
         ).filter_by(
@@ -283,10 +265,11 @@ def remove_from_game():
     return jsonify({'message' : 'success'}), 200
 
 
+# Allows a player to leave mid game or before game starts
 @bp.route('/quit_game', methods = ['GET'])
 @jwt_required
 def quit_game():
-    #finds the id of whoever sent the token
+    # finds the id of whoever sent the token
     player_id = get_jwt_identity()
 
     # get the players game
@@ -311,7 +294,6 @@ def quit_game():
         ).filter_by(
             player_id = player_id
         ).delete()
-
 
     #check if the game is started
     if target_info[0] is not None:
@@ -339,7 +321,6 @@ def quit_game():
                     game_code = game_code
                 ).first()
             game.game_state = 2
-
 
     db.session.commit()
     return jsonify({'message' : 'success'}), 200
