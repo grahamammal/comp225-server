@@ -13,7 +13,7 @@ __Table of Contents__
 - [Heroku Setup](#Heroku-Setup)
 
 ## Description
-A server for the Assassin project by group Elcoanja. It acts as an API for the client side that stores the game state and player information. Documentation of the API can be found [here](https://github.com/grahamammal/comp225-server/blob/master/Assassin%20Server%20API.md).  The client side can be accessed from [here](https://github.com/jacobdweightman/comp225-assassin). The server is built using flask with a postgreSQL database, and is hosted on [Heroku](https://elcoanja.herokuapp.com/). The initial code relied heavily on the tutorial from [Flask](http://flask.pocoo.org/docs/1.0/tutorial/).
+A server for the Assassin project by group Elcoanja. It acts as an API for the client side that stores the game state and player information. Documentation of the API can be found [here](https://github.com/grahamammal/comp225-server/blob/master/Assassin%20Server%20API.md). The client side can be accessed from [here](https://github.com/jacobdweightman/comp225-assassin). Planning information for the project can be found [here](https://www.notion.so/79e84c0ad6994fd7b4cd72364003f146?v=f6c490dd4698449b9141b8a116738678). You may need an account with privileges to access it. The server is built using flask with a postgreSQL database, and is hosted on [Heroku](https://elcoanja.herokuapp.com/). The initial code relied heavily on the tutorial from [Flask](http://flask.pocoo.org/docs/1.0/tutorial/).
 
 ## Local Setup
 To run the server locally, you'll first need to setup a virtual environment for the app. In your console:
