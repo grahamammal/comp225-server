@@ -1,5 +1,4 @@
 # COMP225 Assassin Server
----
 __A project by:__
 * _Analeidi Barrera_
 * _Ellen Graham_
@@ -8,17 +7,15 @@ __A project by:__
 ---
 __Table of Contents__
 
-[Description](#Description)   
-[Local Setup](#Local Setup)   
-[Testing](#Testing)   
-[Heroku Setup](#Heroku Setup)
+- [Description](#Description)  
+- [Local Setup](#Local Setup)   
+- [Testing](#Testing)   
+- [Heroku Setup](#Heroku Setup)
 
 ## Description
----
 A server for the Assassin project by group Elcoanja. It acts as an API for the client side that stores the game state and player information. Documentation of the API can be found [here](https://github.com/grahamammal/comp225-server/blob/master/Assassin%20Server%20API.md#http-request-5).  The client side can be accessed from [here](https://github.com/jacobdweightman/comp225-assassin). The server is built using flask with a postgreSQL database, and is hosted on [Heroku](https://elcoanja.herokuapp.com/). The initial code relied heavily on the tutorial from [Flask](http://flask.pocoo.org/docs/1.0/tutorial/).
 
 ## Local Setup
----
 To run the server locally, you'll first need to setup a virtual environment for the app. In your console:
 
 On Mac:
@@ -95,7 +92,6 @@ flask run
 ```
 
 ## Testing
----
 If you want to run the test suite instead:
 
 On Mac:
@@ -122,7 +118,6 @@ coverage html
 Then open `index.html` in `\htmlcov` with your browser.
 
 ## Heroku Setup
----
 To setup the server on Heroku, first deploy the current build from [the dashboard](https://dashboard.heroku.com/apps/elcoanja/deploy/github). Then, to setup the database, with the Heroku CLI installed run:
 
 ```
