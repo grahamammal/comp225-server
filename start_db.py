@@ -1,3 +1,4 @@
+# a script to add tables to the database
 from assassin_server.__init__ import create_app
 from assassin_server.db_models import db
 app = create_app()

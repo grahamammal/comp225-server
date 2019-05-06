@@ -1,5 +1,5 @@
 from setuptools import find_packages, setup
-
+# makes the app installalbe
 setup(
     name='assassin_server',
     version='1.0.0',
