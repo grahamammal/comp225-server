@@ -452,6 +452,7 @@ A JSON list, where each entry contains the following:
 
 ## Errors
 The assassin-server API uses the following error codes:
+  
 | Error ID | Status Code | Description |
 | -------- | ----------- | ----------- |
 | 0 | 400 | "The game does not exist" |
@@ -469,7 +470,8 @@ The assassin-server API uses the following error codes:
 | 12 | 422 | "This JWT token is invalid" |
 | 13 | 401 | "Please supply a JWT token" |
 
-The status codes correspond to:
+The status codes correspond to:   
+
 | Parameter | Default |
 | ------ | ------ |
 | 400 | Bad Request -- Your request was bad, maybe there is no such player or game, a player with that name already exists, etc. Check the server code to find out why. |
