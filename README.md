@@ -55,7 +55,7 @@ In order to create the tables in the database, first open the python interpreter
 
 On Mac:
 ```
-. venv/bin/python
+python3
 ```
 
 On Windows:
