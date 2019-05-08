@@ -46,7 +46,7 @@ Then install the dependencies:
 pip install -r requirements.txt
 ```
 
-Before running the app, you'll need to setup a postgreSQL database. First, install postgreSQL on your machine. Then create a database for the server to connect to. Once this is done, change the constant connecting to the database to your database URI. In `__init.py__`:    
+Before running the app, you'll need to setup a postgreSQL database. First, install postgreSQL on your machine. Then create a database for the server to connect to. Once this is done, change the constant connecting to the database to your database URI. In `assassin_server\__init__.py`:    
 ```
 app.config['SQLALCHEMY_DATABASE_URI'] = <your postgreSQL link>
 ```
@@ -96,7 +96,7 @@ If you want to run the test suite instead:
 
 On Mac:
 ```
-export TEST_DATABASE_URL=<ppostgreSQL test link>
+export TEST_DATABASE_URL=<postgreSQL test link>
 pytest
 ```
 
