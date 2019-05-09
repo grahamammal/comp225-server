@@ -46,10 +46,12 @@ Then install the dependencies:
 pip install -r requirements.txt
 ```
 
-Before running the app, you'll need to setup a postgreSQL database. First, install postgreSQL on your machine. Then create a database for the server to connect to. Once this is done, change the constant connecting to the database to your database URI. In `assassin_server\__init__.py`:    
+Before running the app, you'll need to setup a postgreSQL database. First, install postgreSQL on your machine. Then [create a database](https://www.guru99.com/postgresql-create-database.html) for the server to connect to. Once this is done, change the constant connecting to the database to your database URI. In `assassin_server\__init__.py`:    
 ```
 app.config['SQLALCHEMY_DATABASE_URI'] = <your postgreSQL link>
 ```
+
+Your postgreSQL link should look something like `postgresql://postgres@localhost:[your port]/[database name]`
 
 In order to create the tables in the database, first open the python interpreter in the directory:
 
