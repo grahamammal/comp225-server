@@ -104,7 +104,7 @@ pytest
 
 On Windows:
 ```
-set TEST_DATABASE_URL=<ppostgreSQL test link>
+set TEST_DATABASE_URL=<postgreSQL test link>
 pytest
 ```
 Note that the database specified by the test link doesn't need to exist, as it will be created then torn down after tests run.

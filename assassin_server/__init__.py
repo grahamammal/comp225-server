@@ -62,10 +62,6 @@ def create_app(test_config=None):
     from . import player_access
     app.register_blueprint(player_access.bp)
 
-    #adds the test_access blueprint to the app
-    from . import debug_access
-    app.register_blueprint(debug_access.bp)
-
     #adds the creator_access blueprint to the app
     from . import creator_access
     app.register_blueprint(creator_access.bp)
