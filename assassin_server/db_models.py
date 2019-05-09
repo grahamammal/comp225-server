@@ -27,7 +27,7 @@ class Games(db.Model):
     __tablename__ = 'games'
     game_id = db.Column(db.Integer, primary_key = True, autoincrement = True)
     game_name = db.Column(db.String(100), nullable = False)
-    game_rules = db.Column(db.String(100))
+    game_rules = db.Column(db.String(500))
     game_code = db.Column(db.Integer, unique = True, nullable = False)
 
     game_state = db.Column(db.Integer, nullable = False)
